@@ -15,7 +15,8 @@
   --nav:56px;--topbar:64px;--restbar:0px;
   --radius:18px;--radius-sm:12px;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{touch-action:manipulation}
 html{height:100%;overflow:hidden}
 body{
   height:100%;overflow:hidden;
@@ -942,6 +943,36 @@ load();renderHome();
 if(S.cw){wStart=S.cw.start;wInt=setInterval(()=>{const e=ge('w-timer');if(e)e.textContent=fDur(Date.now()-wStart);},1000);}
 // Migration from old key
 try{const old=localStorage.getItem('rtss_v2');if(old&&!S.sessions.length){const o=JSON.parse(old);if(o.sessions)S.sessions=o.sessions;if(o.routines&&!S.routines.length)S.routines=o.routines;save();}}catch(e){}
+
+// Expose all functions globally so onclick= works in all browsers
+window.startFree=startFree;
+window.startRoutine=startRoutine;
+window.endWorkout=endWorkout;
+window.saveWO=saveWO;
+window.discardWO=discardWO;
+window.addExoActive=addExoActive;
+window.toggleExo=toggleExo;
+window.rmExo=rmExo;
+window.addSet=addSet;
+window.delSet=delSet;
+window.updS=updS;
+window.togSet=togSet;
+window.skipRest=skipRest;
+window.chRest=chRest;
+window.openRModal=openRModal;
+window.closeRModal=closeRModal;
+window.editR=editR;
+window.delR=delR;
+window.saveRoutine=saveRoutine;
+window.addExoRModal=addExoRModal;
+window.toggleEmoji=toggleEmoji;
+window.insEmoji=insEmoji;
+window.closeExoModal=closeExoModal;
+window.setMF=setMF;
+window.filterExos=filterExos;
+window.pickEx=pickEx;
+window.openDet=openDet;
+window.closeDet=closeDet;
 </script>
 </body>
 </html>
