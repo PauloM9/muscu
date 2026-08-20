@@ -65,10 +65,10 @@ nav{
 
 /* ── APP SCROLL ── */
 #app{flex:1;overflow:hidden;position:relative;z-index:1}
-.section{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.section{display:none;height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;overscroll-behavior:contain}
 .section::-webkit-scrollbar{display:none}
-.section.act{display:block}
-.inner{padding:.9rem .9rem calc(var(--restbar) + 4rem)}
+.section.act{display:block!important}
+.inner{padding:.9rem .9rem calc(var(--restbar) + 5rem)}
 
 /* ── BUTTONS ── */
 .btn{
@@ -529,7 +529,37 @@ const EX=[
   // AVANT-BRAS
   {id:'flex_halt_av',n:'Flexion aux haltères',m:'Avant-bras',e:'Haltères',bw:false,ic:'🤏',c:'#3D405B',d:'Prise supination ou pronation sur les poignets.'},
   {id:'flex_barre_pron',n:'Flexion barre pronation',m:'Avant-bras',e:'Barre',bw:false,ic:'🔄',c:'#4A4E69',d:'Poignets en pronation, extenseurs de l\'avant-bras.'},
-  {id:'flex_barre_sup',n:'Flexion barre supination',m:'Avant-bras',e:'Barre',bw:false,ic:'🔁',c:'#3D405B',d:'Poignets en supination, fléchisseurs de l\'avant-bras.'},
+  {id:'flex_barre_sup',n:'Flexion barre supination',m:'Avant-bras',e:'Barre',bw:false,ic:'🔁',c:'#3D405B',d:'Poignets en supination, fléchisseurs de l\'avant-bras.'},,
+  // PECTORAUX SUPPLÉMENTAIRES
+  {id:'dev_couche_halt',n:'Développé couché (haltères)',m:'Pectoraux',e:'Haltères',bw:false,ic:'🏋️',c:'#0077B6',d:'Banc plat, haltères en pronation, descente contrôlée avec étirement.'},
+  {id:'dev_incline_halt',n:'Développé incliné (haltères)',m:'Pectoraux',e:'Haltères',bw:false,ic:'📐',c:'#0096C7',d:'Banc incliné 30-45°, haltères, focus haut des pectoraux.'},
+  {id:'dips_leste',n:'Dips (lestés)',m:'Pectoraux',e:'Lest',bw:false,ic:'⚖️',c:'#00B4D8',d:'Dips avec ceinture lestée. Corps légèrement penché en avant pour pectoraux.'},
+  // ÉPAULES SUPPLÉMENTAIRES
+  {id:'dev_mil_halt',n:'Développé militaire (haltères)',m:'Épaules',e:'Haltères',bw:false,ic:'🏛️',c:'#CC5500',d:'Assis ou debout, haltères à hauteur des épaules, poussée verticale.'},
+  {id:'dev_mil_machine',n:'Développé militaire (machine)',m:'Épaules',e:'Machine',bw:false,ic:'🔩',c:'#E07000',d:'Machine guidée, idéal pour isolation et sécurité.'},
+  {id:'elev_lat_halt',n:'Élévation latérale (haltères)',m:'Épaules',e:'Haltères',bw:false,ic:'↔️',c:'#FF8C00',d:'Bras légèrement fléchis, montée latérale à hauteur des épaules.'},
+  {id:'elev_lat_poulie',n:'Élévation latérale (poulie)',m:'Épaules',e:'Poulie',bw:false,ic:'🔗',c:'#CC5500',d:'Poulie basse, tension constante, meilleure activation en bas.'},
+  {id:'elev_Y',n:'Élévation en Y (banc incliné)',m:'Épaules',e:'Haltères',bw:false,ic:'🦅',c:'#E07000',d:'Allongé face contre banc incliné, bras en Y à 30-45° au-dessus des épaules.'},
+  {id:'oiseau_halt',n:'Oiseau (haltères)',m:'Épaules',e:'Haltères',bw:false,ic:'🐦',c:'#FF8C00',d:'Penché à 90°, élévations latérales vers l'arrière, deltoïde postérieur.'},
+  {id:'oiseau_machine',n:'Oiseau (machine)',m:'Épaules',e:'Machine',bw:false,ic:'🦤',c:'#CC5500',d:'Machine butterfly inversée, isolation deltoïde postérieur.'},
+  // DOS SUPPLÉMENTAIRES
+  {id:'traction_leste',n:'Tractions (lestées)',m:'Dos',e:'Lest',bw:false,ic:'⬆️',c:'#1B4332',d:'Tractions avec ceinture lestée, prise pronation ou supination.'},
+  {id:'tirage_poitrine',n:'Tirage poitrine (poulie)',m:'Dos',e:'Poulie',bw:false,ic:'⬇️',c:'#2D6A4F',d:'Poulie haute, barre large, tirer vers la poitrine, coudes vers le bas.'},
+  {id:'rowing_poulie_assis',n:'Rowing poulie (assis)',m:'Dos',e:'Poulie',bw:false,ic:'🚣',c:'#40916C',d:'Poulie basse, assis, tirer vers l'abdomen, dos droit et fixe.'},
+  {id:'rowing_1bras_poulie',n:'Rowing un bras (poulie)',m:'Dos',e:'Poulie',bw:false,ic:'💪',c:'#52B788',d:'Poulie basse, unilatéral, rotation du tronc contrôlée.'},
+  {id:'rowing_pench_barre',n:'Rowing penché (barre)',m:'Dos',e:'Barre',bw:false,ic:'🔱',c:'#2D6A4F',d:'Penché à 45°, tirer la barre vers le bas des abdos, coudes le long du corps.'},
+  {id:'rowing_halt',n:'Rowing haltères',m:'Dos',e:'Haltères',bw:false,ic:'🤸',c:'#1B4332',d:'Un genou sur banc, tirer l'haltère vers la hanche, coude vers le plafond.'},
+  {id:'rowing_incline',n:'Rowing incliné (banc)',m:'Dos',e:'Haltères',bw:false,ic:'📐',c:'#40916C',d:'Face contre banc incliné, tirer les deux haltères vers les hanches.'},
+  // BICEPS SUPPLÉMENTAIRES
+  {id:'curl_incline',n:'Curl incliné (haltères)',m:'Biceps',e:'Haltères',bw:false,ic:'📐',c:'#6A0572',d:'Banc incliné, bras pendants derrière soi, étirement maximal du biceps.'},
+  {id:'curl_halt_debout',n:'Curl haltères (debout)',m:'Biceps',e:'Haltères',bw:false,ic:'💪',c:'#9B5DE5',d:'Debout, alternés ou simultanés, supination complète en montée.'},
+  {id:'curl_1bras_poulie',n:'Curl un bras (poulie)',m:'Biceps',e:'Poulie',bw:false,ic:'🔗',c:'#7B2D8B',d:'Poulie basse, isolation unilatérale, tension constante.'},
+  {id:'curl_marteau_corde',n:'Curl marteau (corde poulie)',m:'Biceps',e:'Poulie',bw:false,ic:'🔨',c:'#6A0572',d:'Corde à la poulie basse, prise neutre marteau, focus brachial.'},
+  // TRICEPS SUPPLÉMENTAIRES
+  {id:'dips_banc_leste',n:'Dips sur banc (lestés)',m:'Triceps',e:'Lest',bw:false,ic:'🪑',c:'#9B2335',d:'Mains sur banc, poids sur les cuisses, descente complète.'},
+  {id:'skullcrusher',n:'Skullcrusher (barre)',m:'Triceps',e:'Barre',bw:false,ic:'💀',c:'#C1121F',d:'Allongé, barre EZ vers le front, coudes fixes, extension complète.'},
+  {id:'ext_poulie_corde_tete',n:'Extension poulie corde (sur tête)',m:'Triceps',e:'Poulie',bw:false,ic:'☝️',c:'#E63946',d:'Dos à la poulie haute, corde derrière la tête, extension vers le bas.'},
+  {id:'ext_poulie_corde_droite',n:'Extension poulie corde (droite)',m:'Triceps',e:'Poulie',bw:false,ic:'⬇️',c:'#9B2335',d:'Face à la poulie haute, corde, pousser vers le bas, coudes fixes.'},
 ];
 
 // ── STATE ──
@@ -648,7 +678,7 @@ function buildExoBlock(ex,ei){
     ${pr?`<div style="padding:0 .9rem .4rem;font-size:.68rem;color:var(--t3);font-weight:700">${pr}</div>`:''}
     <div class="exo-body${isCollapsed?' collapsed':''}" id="body-${ei}">
       <table class="stbl">
-        <thead><tr><th>#</th><th>Reps</th><th>${ex.bw?'BW':'Poids kg'}</th><th>Vol</th><th>✕</th><th>✓</th></tr></thead>
+        <thead><tr><th>#</th><th>${ex.bw?'BW':'kg'}</th><th>Reps</th><th>Vol</th><th>✕</th><th>✓</th></tr></thead>
         <tbody id="sets-${ei}"></tbody>
       </table>
       <button class="btn btn-ghost btn-xs" style="margin-top:.5rem" onclick="addSet(${ei})">+ Série</button>
@@ -676,8 +706,8 @@ function renderSets(ei){
     const tr=document.createElement('tr');tr.className=s.done?'set-done':'';
     tr.innerHTML=`
       <td><span class="s-num">${si+1}</span></td>
-      <td><input type="number" class="sinp" value="${s.reps||''}" placeholder="10" min="1" onchange="updS(${ei},${si},'reps',this.value)"></td>
       <td>${ex.bw?`<span class="bw-tag">BW</span>`:`<input type="number" class="sinp" value="${s.weight||''}" placeholder="0" min="0" step="0.5" onchange="updS(${ei},${si},'weight',this.value)">`}</td>
+      <td><input type="number" class="sinp" value="${s.reps||''}" placeholder="10" min="1" onchange="updS(${ei},${si},'reps',this.value)"></td>
       <td style="font-size:.72rem;color:var(--t3);font-weight:700;font-variant-numeric:tabular-nums">${v}</td>
       <td><button class="del-set" onclick="delSet(${ei},${si})">✕</button></td>
       <td><button class="chk${s.done?' done':''}" onclick="togSet(${ei},${si})">${s.done?'✓':''}</button></td>`;
@@ -761,15 +791,26 @@ function delR(i){if(confirm('Supprimer ?')){S.routines.splice(i,1);save();render
 function renderMExos(){
   const c=ge('m-exo-list');
   if(!tmpExos.length){c.innerHTML='<div style="color:var(--t3);font-size:.8rem;font-weight:600;padding:.3rem 0">Aucun exercice</div>';return;}
-  c.innerHTML=tmpExos.map((e,i)=>`
-    <div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .6rem;background:rgba(12,24,36,.8);border-radius:10px;margin-bottom:.35rem">
-      <span style="font-size:1.05rem;flex-shrink:0">${exo(e.id).ic}</span>
-      <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${e.n}</div>
-      <input type="number" value="${e.dSets||3}" min="1" max="20" style="width:36px;padding:.22rem;font-size:.75rem;text-align:center" onchange="tmpExos[${i}].dSets=+this.value" title="Séries">
-      <span style="font-size:.7rem;color:var(--t3);font-weight:700">×</span>
-      <input type="number" value="${e.dReps||10}" min="1" max="100" style="width:36px;padding:.22rem;font-size:.75rem;text-align:center" onchange="tmpExos[${i}].dReps=+this.value" title="Reps">
-      <button class="btn-icon" onclick="tmpExos.splice(${i},1);renderMExos()">✕</button>
-    </div>`).join('');
+  const restOpts=[30,45,60,75,90,105,120,150,180,240,300].map(v=>`<option value="${v}">${fRest(v)}</option>`).join('');
+  c.innerHTML=tmpExos.map((e,i)=>{
+    const rv=e.restTime||60;
+    const ropts=[30,45,60,75,90,105,120,150,180,240,300].map(v=>`<option value="${v}"${rv===v?" selected":""}>${fRest(v)}</option>`).join('');
+    return`<div style="background:rgba(12,24,36,.8);border-radius:10px;margin-bottom:.4rem;overflow:hidden;border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .6rem">
+        <span style="font-size:1.05rem;flex-shrink:0">${exo(e.id).ic}</span>
+        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${e.n}</div>
+        <button class="btn-icon" onclick="tmpExos.splice(${i},1);renderMExos()">✕</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:.4rem;padding:.35rem .6rem .5rem;background:rgba(7,16,26,.5)">
+        <span style="font-size:.68rem;color:var(--t3);font-weight:700">Séries</span>
+        <input type="number" value="${e.dSets||3}" min="1" max="20" style="width:40px;padding:.25rem;font-size:.8rem;text-align:center;border-radius:8px" onchange="tmpExos[${i}].dSets=+this.value">
+        <span style="font-size:.68rem;color:var(--t3);font-weight:700">Reps</span>
+        <input type="number" value="${e.dReps||10}" min="1" max="100" style="width:40px;padding:.25rem;font-size:.8rem;text-align:center;border-radius:8px" onchange="tmpExos[${i}].dReps=+this.value">
+        <span style="font-size:.68rem;color:var(--t3);font-weight:700">Récup</span>
+        <select style="width:64px;padding:.25rem;font-size:.75rem;border-radius:8px" onchange="tmpExos[${i}].restTime=+this.value">${ropts}</select>
+      </div>
+    </div>`;
+  }).join('');
 }
 function addExoRModal(){openExoPicker(e=>{tmpExos.push({...e,dSets:3,dReps:10,dW:0});renderMExos();});}
 function saveRoutine(){
