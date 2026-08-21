@@ -21,8 +21,6 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;disp
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(ellipse 60% 40% at 80% 15%,rgba(72,202,228,.06) 0%,transparent 100%),
     radial-gradient(ellipse 50% 60% at 20% 85%,rgba(0,119,182,.08) 0%,transparent 100%);}
-.goku-bg{position:fixed;right:-20px;bottom:60px;width:220px;height:340px;z-index:0;pointer-events:none;opacity:.06}
-.goku-bg svg{width:100%;height:100%}
 
 /* NAV */
 nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
@@ -250,7 +248,6 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </style>
 </head>
 <body>
-<div class="goku-bg"><svg viewBox="0 0 200 320" fill="none"><path d="M80 35 C75 20 65 10 60 18 C55 6 65 0 75 10 C70 2 80 0 82 12 C78 4 88 5 86 15 C84 8 92 10 90 20" fill="rgba(72,202,228,1)" opacity=".7"/><path d="M110 20 C115 8 125 5 128 15 C126 7 134 8 132 18 C130 10 138 15 135 22" fill="rgba(72,202,228,1)" opacity=".6"/><ellipse cx="100" cy="55" rx="24" ry="22" fill="rgba(72,202,228,.15)" stroke="rgba(72,202,228,.4)" stroke-width="1.5"/><rect x="91" y="74" width="18" height="12" rx="4" fill="rgba(72,202,228,.12)" stroke="rgba(72,202,228,.3)" stroke-width="1"/><path d="M68 86 C60 90 52 100 50 118 C48 136 54 148 62 154 L138 154 C146 148 152 136 150 118 C148 100 140 90 132 86 C124 82 116 80 100 80 C84 80 76 82 68 86Z" fill="rgba(72,202,228,.12)" stroke="rgba(72,202,228,.35)" stroke-width="1.5"/><path d="M52 90 C40 94 30 106 28 120 C26 132 32 142 40 146 C44 140 44 130 48 118 C52 108 58 98 68 90Z" fill="rgba(72,202,228,.1)" stroke="rgba(72,202,228,.3)" stroke-width="1.2"/><path d="M148 90 C160 94 170 106 172 120 C174 132 168 142 160 146 C156 140 156 130 152 118 C148 108 142 98 132 90Z" fill="rgba(72,202,228,.1)" stroke="rgba(72,202,228,.3)" stroke-width="1.2"/><rect x="22" y="142" width="22" height="18" rx="6" fill="rgba(72,202,228,.15)" stroke="rgba(72,202,228,.3)" stroke-width="1.2"/><rect x="156" y="142" width="22" height="18" rx="6" fill="rgba(72,202,228,.15)" stroke="rgba(72,202,228,.3)" stroke-width="1.2"/><rect x="62" y="150" width="76" height="8" rx="4" fill="rgba(72,202,228,.18)" stroke="rgba(72,202,228,.35)" stroke-width="1"/><path d="M62 158 C58 170 56 190 58 210 C60 226 66 238 72 244 L90 244 C92 230 92 210 90 190 C88 174 84 162 80 156Z" fill="rgba(72,202,228,.1)" stroke="rgba(72,202,228,.28)" stroke-width="1.2"/><path d="M138 158 C142 170 144 190 142 210 C140 226 134 238 128 244 L110 244 C108 230 108 210 110 190 C112 174 116 162 120 156Z" fill="rgba(72,202,228,.1)" stroke="rgba(72,202,228,.28)" stroke-width="1.2"/></svg></div>
 
 <nav>
   <div class="logo">Road to Super Sayan 🔥</div>
@@ -326,11 +323,9 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <button class="ct" data-p="month">Mois</button>
       <button class="ct" data-p="year">Année</button>
     </div>
-    <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="110"></canvas></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.6rem">
-      <div class="chart-box" style="margin:0"><div class="chart-ttl">Reps</div><canvas id="c-reps" height="90"></canvas></div>
-      <div class="chart-box" style="margin:0"><div class="chart-ttl">Durée (min)</div><canvas id="c-dur" height="90"></canvas></div>
-    </div>
+    <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="100"></canvas></div>
+    <div class="chart-box"><div class="chart-ttl">Répétitions</div><canvas id="c-reps" height="80"></canvas></div>
+    <div class="chart-box"><div class="chart-ttl">Durée (min)</div><canvas id="c-dur" height="80"></canvas></div>
     <div style="font-size:.68rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:.5rem">Séances enregistrées</div>
     <div id="history-list"></div>
   </div>
@@ -702,7 +697,6 @@ function buildExoBlock(ex,ei){
   head.className='exo-head';
   head.innerHTML=`
     <div class="drag-handle" title="Déplacer">⠿</div>
-    <div class="exo-icon" style="background:${def.c}18;border:1px solid ${def.c}30">${def.ic}</div>
     <div style="flex:1;min-width:0">
       <div class="exo-nm">${def.n}</div>
       <div class="exo-sub">
@@ -832,7 +826,6 @@ function filterReplaceExos(){
   const q=ge('replace-search').value.toLowerCase();
   const list=EX.filter(e=>(replaceFilter==='Tous'||e.m===replaceFilter)&&(!q||e.n.toLowerCase().includes(q)));
   ge('replace-exo-list').innerHTML=list.map(e=>`<div class="ep-item" onclick="pickReplace('${e.id}')">
-    <div class="ep-icon" style="background:${e.c}18;border:1px solid ${e.c}30">${e.ic}</div>
     <div style="flex:1;min-width:0"><div class="ep-nm">${e.n}</div>
     <div style="display:flex;gap:.25rem;margin:.15rem 0"><span class="tag t-blue">${e.m}</span><span class="tag ${e.bw?'t-ice':'t-orange'}">${e.bw?'Poids corps':e.e}</span></div>
     </div></div>`).join('');
@@ -952,7 +945,6 @@ function renderMExos(){
     blk.innerHTML=`
       <div class="rse-head">
         <span class="drag-handle" style="cursor:grab">⠿</span>
-        <span style="font-size:1.05rem">${def.ic}</span>
         <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${def.n}</div>
         <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
           <span style="font-size:.65rem;color:var(--t3);font-weight:700">Récup:</span>
@@ -978,11 +970,15 @@ function renderRSESets(i){
   sets.forEach((s,si)=>{
     const row=document.createElement('div');
     row.className='rse-set';
-    row.innerHTML=`
+    // First set: show column labels above inputs
+    const labels=si===0?`<div style="display:flex;gap:.35rem;align-items:center;margin-bottom:.15rem;padding-left:22px">
+      <span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Reps</span>
+      ${ex.bw?'':`<span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">kg</span>`}
+    </div>`:'';
+    row.innerHTML=labels+`
       <span class="rse-lbl">${si+1}</span>
-      ${ex.bw?'<span class="bw-tag">BW</span>':`<input type="number" class="rse-inp" value="${s.weight||''}" placeholder="kg" min="0" step="0.5" onchange="tmpExos[${i}].sets[${si}].weight=+this.value">`}
-      <span class="rse-unit">×</span>
       <input type="number" class="rse-inp" value="${s.reps||''}" placeholder="reps" min="1" onchange="tmpExos[${i}].sets[${si}].reps=+this.value">
+      ${ex.bw?'<span class="bw-tag">BW</span>':`<input type="number" class="rse-inp" value="${s.weight||''}" placeholder="kg" min="0" step="0.5" onchange="tmpExos[${i}].sets[${si}].weight=+this.value">`}
       <button class="del-set" onclick="tmpExos[${i}].sets.splice(${si},1);renderRSESets(${i})">✕</button>`;
     cont.appendChild(row);
   });
@@ -1029,7 +1025,6 @@ function filterExos(){
   const q=ge('exo-search').value.toLowerCase();
   const list=EX.filter(e=>(mFilter==='Tous'||e.m===mFilter)&&(!q||e.n.toLowerCase().includes(q)||e.m.toLowerCase().includes(q)));
   ge('exo-list').innerHTML=list.map(e=>`<div class="ep-item" onclick="pickEx('${e.id}')">
-    <div class="ep-icon" style="background:${e.c}18;border:1px solid ${e.c}30">${e.ic}</div>
     <div style="flex:1;min-width:0">
       <div class="ep-nm">${e.n}</div>
       <div style="display:flex;gap:.25rem;margin:.15rem 0;flex-wrap:wrap">
@@ -1149,7 +1144,7 @@ function openDet(i){
     const def=exoDef(ex.id);
     const prW=getPR(ex.id,'weight');
     h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--border)">
-      <div style="font-weight:800;font-size:.87rem;margin-bottom:.32rem">${def.ic} ${def.n}</div>
+      <div style="font-weight:800;font-size:.87rem;margin-bottom:.32rem">${def.n}</div>
       ${d.map((s,i)=>{
         const isPR=!ex.bw&&prW>0&&(s.weight||0)>=prW&&(s.weight||0)>0;
         return`<div style="font-size:.79rem;color:var(--t2);display:flex;gap:.9rem;padding:.16rem 0;font-weight:600;align-items:center">
