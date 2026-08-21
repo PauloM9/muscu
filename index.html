@@ -1287,8 +1287,9 @@ window.renderRSESets=renderRSESets;
 window.addExoToRoutineModal=addExoToRoutineModal;
 window.confirmRename=confirmRename;
 
+// On load: if a workout was in progress, discard it (don't auto-resume)
+if(S.cw){S.cw=null;save();}
 renderHome();
-if(S.cw){wStart=S.cw.start;wPausedTotal=S.cw.pausedMs||0;wInt=setInterval(()=>{if(!wPaused){const el=ge('w-timer');if(el)el.textContent=fDur(Date.now()-wStart-wPausedTotal);}},500);}
 </script>
 <div id="m-rename" class="modal-ov ctr" style="display:none">
   <div class="modal rd" style="padding:1.2rem .9rem">
