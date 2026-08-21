@@ -946,7 +946,7 @@ function renderMExos(){
     blk.innerHTML=`
       <div class="rse-head">
         <span class="drag-handle" style="cursor:grab">⠿</span>
-        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer" data-edit-exo-id="${e.id}" data-edit-exo-name="${exoName(e.id)}">${exoName(e.id)} <span style='font-size:.6rem;color:var(--t3)'>✏️</span></div>
+        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer" data-edit-exo-id="${ex.id}" data-edit-exo-name="${exoName(ex.id)}">${exoName(ex.id)} <span style='font-size:.6rem;color:var(--t3)'>✏️</span></div>
         <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
           <span style="font-size:.65rem;color:var(--t3);font-weight:700">Récup:</span>
           <select style="width:62px;padding:.22rem .25rem;font-size:.72rem;border-radius:7px" onchange="tmpExos[${i}].restTime=+this.value">${restOpts}</select>
@@ -1202,19 +1202,26 @@ function renderCharts(){
   mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','line');
 }
 
+let _renameCb=null;
 function editExoName(id,current,cb){
-  const name=prompt('Modifier le nom de l\'exercice :',current);
-  if(name===null)return;
-  const trimmed=name.trim();
-  if(!trimmed)return;
+  _renameCb={id,cb};
+  ge('inp-rename').value=current||'';
+  ge('m-rename').style.display='flex';
+  setTimeout(()=>ge('inp-rename').focus(),100);
+}
+function confirmRename(){
+  if(!_renameCb)return;
+  const name=ge('inp-rename').value.trim();
+  if(!name){ge('m-rename').style.display='none';return;}
+  const{id,cb}=_renameCb;
   if(!S.customNames)S.customNames={};
-  S.customNames[id]=trimmed;
-  // Update all routines that use this exercise
-  S.routines.forEach(r=>r.exercises.forEach(e=>{if(e.id===id)e.customName=trimmed;}));
-  // Update current workout if active
-  if(S.cw)S.cw.exercises.forEach(e=>{if(e.id===id)e.customName=trimmed;});
+  S.customNames[id]=name;
+  S.routines.forEach(r=>r.exercises.forEach(e=>{if(e.id===id)e.customName=name;}));
+  if(S.cw)S.cw.exercises.forEach(e=>{if(e.id===id)e.customName=name;});
   save();
-  if(cb)cb(trimmed);
+  ge('m-rename').style.display='none';
+  _renameCb=null;
+  if(cb)cb(name);
 }
 window.editExoName=editExoName;
 
@@ -1244,6 +1251,9 @@ ge('replace-search').addEventListener('input',filterReplaceExos);
 ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar();});
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
+ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
+ge('btn-confirm-rename').addEventListener('click',confirmRename);
+ge('inp-rename').addEventListener('keydown',e=>{if(e.key==='Enter')confirmRename();});
 document.querySelectorAll('.ct').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.ct').forEach(x=>x.classList.remove('act'));this.classList.add('act');chartP=this.dataset.p;renderCharts();}));
 
 // Event delegation for exercise name editing
@@ -1274,9 +1284,23 @@ window.filterReplaceExos=filterReplaceExos;
 window.insEmoji=insEmoji;
 window.addRSESet=addRSESet;
 window.renderRSESets=renderRSESets;
+window.addExoToRoutineModal=addExoToRoutineModal;
+window.confirmRename=confirmRename;
 
 renderHome();
 if(S.cw){wStart=S.cw.start;wPausedTotal=S.cw.pausedMs||0;wInt=setInterval(()=>{if(!wPaused){const el=ge('w-timer');if(el)el.textContent=fDur(Date.now()-wStart-wPausedTotal);}},500);}
 </script>
+<div id="m-rename" class="modal-ov ctr" style="display:none">
+  <div class="modal rd" style="padding:1.2rem .9rem">
+    <div class="m-title">✏️ Renommer l'exercice</div>
+    <div class="form-g">
+      <input type="text" id="inp-rename" placeholder="Nouveau nom..." style="font-size:1rem">
+    </div>
+    <div style="display:flex;gap:.45rem;margin-top:.75rem">
+      <button class="btn btn-ghost" style="flex:1" id="btn-cancel-rename">Annuler</button>
+      <button class="btn btn-ice" style="flex:2" id="btn-confirm-rename">Valider</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
