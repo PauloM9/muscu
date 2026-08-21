@@ -496,6 +496,8 @@ const EX=[
   {id:'flex_barre_pron',n:'Flexion barre pronation',m:'Avant-bras',e:'Barre',bw:false,ic:'🔄',c:'#4A4E69',d:'Poignets en pronation, extenseurs de l\'avant-bras.'},
   {id:'flex_barre_sup',n:'Flexion barre supination',m:'Avant-bras',e:'Barre',bw:false,ic:'🔁',c:'#3D405B',d:'Poignets en supination, fléchisseurs de l\'avant-bras.'},
   // PECTORAUX SUPPLÉMENTAIRES
+  {id:'dev_incline_machine',n:'Développé incliné (machine)',m:'Pectoraux',e:'Machine',bw:false,ic:'🔩',c:'#0096C7',d:'Machine inclinée guidée, focus haut des pectoraux, sécurisé.'},
+  {id:'dev_convergent',n:'Développé convergent (machine)',m:'Pectoraux',e:'Machine',bw:false,ic:'🔩',c:'#00B4D8',d:'Machine convergente, prise en pronation, travail complet des pectoraux avec étirement.'},
   {id:'dev_couche_halt',n:'Développé couché (haltères)',m:'Pectoraux',e:'Haltères',bw:false,ic:'🏋️',c:'#0077B6',d:'Banc plat, haltères en pronation, descente contrôlée avec étirement.'},
   {id:'dev_incline_halt',n:'Développé incliné (haltères)',m:'Pectoraux',e:'Haltères',bw:false,ic:'📐',c:'#0096C7',d:'Banc incliné 30-45°, haltères, focus haut des pectoraux.'},
   {id:'dips_leste',n:'Dips (lestés)',m:'Pectoraux',e:'Lest',bw:false,ic:'⚖️',c:'#00B4D8',d:'Dips avec ceinture lestée. Corps légèrement penché en avant pour pectoraux.'},
@@ -969,7 +971,7 @@ function renderMExos(){
     blk.innerHTML=`
       <div class="rse-head">
         <span class="drag-handle" style="cursor:grab">⠿</span>
-        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer" data-edit-exo-id="${ex.id}" data-edit-exo-name="${exoName(ex.id)}">${exoName(ex.id)} <span style='font-size:.6rem;color:var(--t3)'>✏️</span></div>
+        <div class="exo-rename-btn" data-exo-id="${ex.id}" style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;padding:.2rem .3rem;border-radius:6px">${exoName(ex.id)} <span style="font-size:.6rem;color:var(--t3)">✏️</span></div>
         <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
           <span style="font-size:.65rem;color:var(--t3);font-weight:700">Récup:</span>
           <select style="width:62px;padding:.22rem .25rem;font-size:.72rem;border-radius:7px" onchange="tmpExos[${i}].restTime=+this.value">${restOpts}</select>
@@ -980,6 +982,12 @@ function renderMExos(){
       <div style="padding:0 .7rem .55rem"><button class="btn btn-ghost btn-xs" onclick="addRSESet(${i})">+ Série</button></div>`;
 
     c.appendChild(blk);
+    // Wire rename button
+    const rnBtn=blk.querySelector('.exo-rename-btn');
+    if(rnBtn)rnBtn.addEventListener('click',function(){
+      const id=this.dataset.exoId;
+      editExoName(id,exoName(id),()=>renderMExos());
+    });
     // Store sets ref
     tmpExos[i].sets=sets;
     renderRSESets(i);
