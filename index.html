@@ -529,7 +529,7 @@ const EX=[
 const MUSCLES=['Tous','Pectoraux','Dos','Biceps','Triceps','Épaules','Abdominaux','Quadriceps','Ischios','Mollets','Avant-bras'];
 const EMOJIS=['💪','🔥','⚡','🏆','🎯','👊','🦾','😤','🐉','🦁','🏋️','🚀','❤️','🌟','😈','🤟','⚔️','💎','🌊','☄️','👟','🎽','💀','🦊','🥊','🎪','🏅','🔱','🛡️','🌪️'];
 
-let S={routines:[],sessions:[],cw:null,calManual:{}};
+let S={routines:[],sessions:[],cw:null,calManual:{},customNames:{}};
 let wInt=null,wStart=0,wPaused=false,wPausedAt=0,wPausedTotal=0;
 let rInt=null,rTotal=0,rLeft=0;
 let exoCb=null,mFilter='Tous',rEditIdx=null,tmpExos=[];
@@ -550,6 +550,7 @@ function load(){
 }
 const ge=id=>document.getElementById(id);
 const exoDef=id=>EX.find(e=>e.id===id)||{n:id,ic:'💪',m:'',e:'',bw:false,c:'#0077B6',d:''};
+function exoName(id){return(S.customNames&&S.customNames[id])||exoDef(id).n;}
 
 // ── HELPERS ──
 function fDur(ms){if(!ms||ms<0)return'0:00';const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return h?`${h}h${String(m%60).padStart(2,'0')}m`:`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
@@ -698,7 +699,7 @@ function buildExoBlock(ex,ei){
   head.innerHTML=`
     <div class="drag-handle" title="Déplacer">⠿</div>
     <div style="flex:1;min-width:0">
-      <div class="exo-nm">${def.n}</div>
+      <div class="exo-nm" style="cursor:pointer" data-edit-exo-id="${ex.id}" data-edit-exo-name="${exoName(ex.id)}">${exoName(ex.id)} <span style='font-size:.65rem;color:var(--t3)'>✏️</span></div>
       <div class="exo-sub">
         <span class="tag t-blue">${def.m}</span>
         <span class="tag ${ex.bw?'t-ice':'t-orange'}" style="margin-left:.2rem">${ex.bw?'Poids corps':def.e}</span>
@@ -945,7 +946,7 @@ function renderMExos(){
     blk.innerHTML=`
       <div class="rse-head">
         <span class="drag-handle" style="cursor:grab">⠿</span>
-        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${def.n}</div>
+        <div style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer" data-edit-exo-id="${e.id}" data-edit-exo-name="${exoName(e.id)}">${exoName(e.id)} <span style='font-size:.6rem;color:var(--t3)'>✏️</span></div>
         <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
           <span style="font-size:.65rem;color:var(--t3);font-weight:700">Récup:</span>
           <select style="width:62px;padding:.22rem .25rem;font-size:.72rem;border-radius:7px" onchange="tmpExos[${i}].restTime=+this.value">${restOpts}</select>
@@ -1028,7 +1029,7 @@ function filterExos(){
   const list=EX.filter(e=>(mFilter==='Tous'||e.m===mFilter)&&(!q||e.n.toLowerCase().includes(q)||e.m.toLowerCase().includes(q)));
   ge('exo-list').innerHTML=list.map(e=>`<div class="ep-item" onclick="pickEx('${e.id}')">
     <div style="flex:1;min-width:0">
-      <div class="ep-nm">${e.n}</div>
+      <div class="ep-nm">${exoName(e.id)}</div>
       <div style="display:flex;gap:.25rem;margin:.15rem 0;flex-wrap:wrap">
         <span class="tag t-blue">${e.m}</span>
         <span class="tag ${e.bw?'t-ice':'t-orange'}">${e.bw?'Poids corps':e.e}</span>
@@ -1146,7 +1147,7 @@ function openDet(i){
     const def=exoDef(ex.id);
     const prW=getPR(ex.id,'weight');
     h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--border)">
-      <div style="font-weight:800;font-size:.87rem;margin-bottom:.32rem">${def.n}</div>
+      <div style="font-weight:800;font-size:.87rem;margin-bottom:.32rem">${exoName(ex.id)}</div>
       ${d.map((s,i)=>{
         const isPR=!ex.bw&&prW>0&&(s.weight||0)>=prW&&(s.weight||0)>0;
         return`<div style="font-size:.79rem;color:var(--t2);display:flex;gap:.9rem;padding:.16rem 0;font-weight:600;align-items:center">
@@ -1201,6 +1202,22 @@ function renderCharts(){
   mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','line');
 }
 
+function editExoName(id,current,cb){
+  const name=prompt('Modifier le nom de l\'exercice :',current);
+  if(name===null)return;
+  const trimmed=name.trim();
+  if(!trimmed)return;
+  if(!S.customNames)S.customNames={};
+  S.customNames[id]=trimmed;
+  // Update all routines that use this exercise
+  S.routines.forEach(r=>r.exercises.forEach(e=>{if(e.id===id)e.customName=trimmed;}));
+  // Update current workout if active
+  if(S.cw)S.cw.exercises.forEach(e=>{if(e.id===id)e.customName=trimmed;});
+  save();
+  if(cb)cb(trimmed);
+}
+window.editExoName=editExoName;
+
 // ── INIT ──
 load();
 
@@ -1228,6 +1245,19 @@ ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
 document.querySelectorAll('.ct').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.ct').forEach(x=>x.classList.remove('act'));this.classList.add('act');chartP=this.dataset.p;renderCharts();}));
+
+// Event delegation for exercise name editing
+document.addEventListener('click',function(ev){
+  const el=ev.target.closest('[data-edit-exo-id]');
+  if(!el)return;
+  const id=el.dataset.editExoId;
+  const cur=el.dataset.editExoName||exoName(id);
+  editExoName(id,cur,()=>{
+    // Re-render wherever we are
+    if(S.cw&&ge('v-active').style.display!=='none')renderActive();
+    if(ge('m-routine').style.display!=='none')renderMExos();
+  });
+});
 
 // Expose onclick functions used in dynamic HTML
 window.startRoutine=startRoutine;
