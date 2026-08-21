@@ -270,7 +270,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <button class="btn btn-ghost" style="width:100%;margin-top:.35rem" id="btn-free">+ Séance libre</button>
     </div>
   </div>
-  <div id="v-active" style="display:none;display:flex;flex-direction:column;height:100%;overflow:hidden">
+  <div id="v-active" style="display:none;flex-direction:column;height:100%;overflow:hidden">
     <div class="topbar">
       <div>
         <div style="font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Durée</div>
@@ -706,7 +706,8 @@ function buildExoBlock(ex,ei){
         <span style="margin-left:.3rem;font-size:.65rem;color:var(--t3)">⏱ ${fRest(ex.restTime||60)}</span>
       </div>
     </div>
-    <div style="display:flex;gap:.25rem">
+    <div style="display:flex;gap:.25rem;align-items:center">
+      <button class="btn-icon" style="font-size:1rem;font-weight:900;color:var(--ice)" id="toggle-${ei}" onclick="toggleSets(${ei})">−</button>
       <button class="btn-icon" style="font-size:.8rem" onclick="replaceExo(${ei})" title="Remplacer">🔄</button>
       <button class="btn-icon" onclick="rmExo(${ei})" title="Supprimer">✕</button>
     </div>`;
@@ -728,6 +729,7 @@ function buildExoBlock(ex,ei){
   const body=document.createElement('div');
   body.className='exo-body';
   body.id='body-'+ei;
+  body.style.display='block'; // always visible by default
 
   const tbl=document.createElement('table');
   tbl.className='stbl';
@@ -806,6 +808,14 @@ function togSet(ei,si){
   save();renderSets(ei);
   if(ex.sets[si].done)startRest(ex.restTime||60);
 }
+function toggleSets(ei){
+  const body=ge('body-'+ei);
+  const btn=ge('toggle-'+ei);
+  if(!body||!btn)return;
+  const hidden=body.style.display==='none';
+  body.style.display=hidden?'block':'none';
+  btn.textContent=hidden?'−':'+';
+}
 function rmExo(ei){S.cw.exercises.splice(ei,1);save();renderActive();}
 function replaceExo(ei){
   replaceCb=(newEx)=>{
@@ -848,9 +858,15 @@ function togglePause(){
 // ── REST ──
 function startRest(s){
   clearInterval(rInt);rTotal=s;rLeft=s;
+  S._restStart=Date.now();S._restTotal=s;save();
   ge('rest-bar').classList.add('on');
   updRest();
-  rInt=setInterval(()=>{rLeft--;updRest();if(rLeft<=0){clearInterval(rInt);skipRest();}},1000);
+  rInt=setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-S._restStart)/1000);
+    rLeft=Math.max(0,rTotal-elapsed);
+    updRest();
+    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}
+  },500);
 }
 function updRest(){
   ge('r-t').textContent=fRest(Math.max(0,rLeft));
@@ -858,8 +874,15 @@ function updRest(){
   const arc=ge('r-arc');
   if(arc)arc.style.strokeDashoffset=(113*(1-Math.max(0,rLeft)/rTotal)).toFixed(1);
 }
-function skipRest(){clearInterval(rInt);ge('rest-bar').classList.remove('on');}
-function chRest(d){rLeft=Math.max(5,rLeft+d);if(rLeft>rTotal)rTotal=rLeft;updRest();}
+function skipRest(){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();ge('rest-bar').classList.remove('on');}
+function chRest(d){
+  rLeft=Math.max(5,rLeft+d);
+  if(rLeft>rTotal)rTotal=rLeft;
+  // Recalculate restStart so timestamp-based countdown stays accurate
+  S._restStart=Date.now()-((rTotal-rLeft)*1000);
+  S._restTotal=rTotal;save();
+  updRest();
+}
 
 // ── FINISH ──
 function endWorkout(){
@@ -1251,6 +1274,15 @@ ge('replace-search').addEventListener('input',filterReplaceExos);
 ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar();});
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&S._restStart&&S._restTotal){
+    const elapsed=Math.floor((Date.now()-S._restStart)/1000);
+    rLeft=Math.max(0,S._restTotal-elapsed);
+    rTotal=S._restTotal;
+    updRest();
+    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}
+  }
+});
 ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
 ge('btn-confirm-rename').addEventListener('click',confirmRename);
 ge('inp-rename').addEventListener('keydown',e=>{if(e.key==='Enter')confirmRename();});
@@ -1283,12 +1315,20 @@ window.setRF=setRF;window.pickReplace=pickReplace;
 window.filterReplaceExos=filterReplaceExos;
 window.insEmoji=insEmoji;
 window.addRSESet=addRSESet;
+window.toggleSets=toggleSets;
 window.renderRSESets=renderRSESets;
 window.addExoToRoutineModal=addExoToRoutineModal;
 window.confirmRename=confirmRename;
 
 // On load: if a workout was in progress, discard it (don't auto-resume)
 if(S.cw){S.cw=null;save();}
+// Restore rest timer if it was running
+if(S._restStart&&S._restTotal){
+  const elapsed=Math.floor((Date.now()-S._restStart)/1000);
+  const remaining=S._restTotal-elapsed;
+  if(remaining>0){rTotal=S._restTotal;rLeft=remaining;ge('rest-bar').classList.add('on');updRest();rInt=setInterval(()=>{const e=Math.floor((Date.now()-S._restStart)/1000);rLeft=Math.max(0,rTotal-e);updRest();if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}},500);}
+  else{S._restStart=null;S._restTotal=0;save();}
+}
 renderHome();
 </script>
 <div id="m-rename" class="modal-ov ctr" style="display:none">
