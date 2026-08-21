@@ -967,15 +967,17 @@ function renderRSESets(i){
   const cont=ge('rse-sets-'+i);if(!cont)return;
   const sets=ex.sets||[];
   cont.innerHTML='';
+  // Labels row above all sets
+  const lblRow=document.createElement('div');
+  lblRow.style.cssText='display:flex;gap:.35rem;align-items:center;margin-bottom:.18rem;padding-left:26px';
+  lblRow.innerHTML=`
+    <span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Reps</span>
+    ${ex.bw?'':`<span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">kg</span>`}`;
+  cont.appendChild(lblRow);
   sets.forEach((s,si)=>{
     const row=document.createElement('div');
     row.className='rse-set';
-    // First set: show column labels above inputs
-    const labels=si===0?`<div style="display:flex;gap:.35rem;align-items:center;margin-bottom:.15rem;padding-left:22px">
-      <span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Reps</span>
-      ${ex.bw?'':`<span style="width:54px;text-align:center;font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">kg</span>`}
-    </div>`:'';
-    row.innerHTML=labels+`
+    row.innerHTML=`
       <span class="rse-lbl">${si+1}</span>
       <input type="number" class="rse-inp" value="${s.reps||''}" placeholder="reps" min="1" onchange="tmpExos[${i}].sets[${si}].reps=+this.value">
       ${ex.bw?'<span class="bw-tag">BW</span>':`<input type="number" class="rse-inp" value="${s.weight||''}" placeholder="kg" min="0" step="0.5" onchange="tmpExos[${i}].sets[${si}].weight=+this.value">`}
