@@ -322,6 +322,15 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <div class="cal-grid" id="cal-days"></div>
     </div>
     <!-- Charts -->
+    <div class="chart-box" style="margin-bottom:.8rem">
+      <div class="chart-ttl">Répartition musculaire 🎯</div>
+      <div class="chart-tabs" style="margin-bottom:.6rem">
+        <button class="ct act" data-p2="week">Semaine</button>
+        <button class="ct" data-p2="month">Mois</button>
+        <button class="ct" data-p2="all">Total</button>
+      </div>
+      <canvas id="c-radar" height="220"></canvas>
+    </div>
     <div class="chart-tabs">
       <button class="ct act" data-p="week">Semaine</button>
       <button class="ct" data-p="month">Mois</button>
@@ -1464,7 +1473,83 @@ function mkChart(id,data,color,type='bar'){
   }};
   charts[id]=new Chart(cv,{type,data:{labels:data.labels,datasets:[{data:data.d,backgroundColor:color+'28',borderColor:color,borderWidth:2,borderRadius:5,fill:type==='line',tension:.4,pointBackgroundColor:color,pointRadius:3}]},options:opts});
 }
+let radarP='week';
+
+function getMuscleSets(period){
+  const groups={
+    'Pectoraux':0,'Dos':0,'Épaules':0,
+    'Biceps':0,'Triceps':0,'Jambes':0,'Abdominaux':0
+  };
+  const now=new Date();
+  S.sessions.forEach(s=>{
+    const t=new Date(s.savedAt||s.start);
+    let include=false;
+    if(period==='week'){
+      const diff=(now-t)/(1000*60*60*24);
+      include=diff<=7;
+    } else if(period==='month'){
+      include=t.getMonth()===now.getMonth()&&t.getFullYear()===now.getFullYear();
+    } else {
+      include=true;
+    }
+    if(!include)return;
+    (s.exercises||[]).forEach(ex=>{
+      const m=ex.m||exoDef(ex.id).m||'';
+      const done=ex.sets.filter(st=>st.done).length;
+      if(m==='Quadriceps'||m==='Ischios'||m==='Fessiers'||m==='Mollets')groups['Jambes']+=done;
+      else if(groups[m]!==undefined)groups[m]+=done;
+    });
+  });
+  return groups;
+}
+
+function renderRadar(){
+  const cv=ge('c-radar');if(!cv)return;
+  if(charts['radar'])charts['radar'].destroy();
+  const g=getMuscleSets(radarP);
+  const labels=Object.keys(g);
+  const data=Object.values(g);
+  const maxVal=Math.max(...data,1);
+  charts['radar']=new Chart(cv,{
+    type:'radar',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        backgroundColor:'rgba(72,202,228,.15)',
+        borderColor:'#48CAE4',
+        borderWidth:2,
+        pointBackgroundColor:'#48CAE4',
+        pointRadius:4,
+        pointHoverRadius:6,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        r:{
+          beginAtZero:true,
+          max:Math.ceil(maxVal*1.2)||10,
+          grid:{color:'rgba(255,255,255,.08)'},
+          angleLines:{color:'rgba(255,255,255,.08)'},
+          pointLabels:{
+            color:'#90CAF9',
+            font:{size:11,family:'Nunito',weight:'700'}
+          },
+          ticks:{
+            display:false,
+            stepSize:Math.ceil(maxVal/4)||1
+          }
+        }
+      }
+    }
+  });
+}
+
 function renderCharts(){
+  renderRadar();
   const d=getCD(chartP);
   mkChart('c-vol',{labels:d.labels,d:d.vd},'#48CAE4');
   mkChart('c-reps',{labels:d.labels,d:d.rd},'#00F5A0','bar');
@@ -1532,7 +1617,14 @@ document.addEventListener('visibilitychange',()=>{
 ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
 ge('btn-confirm-rename').addEventListener('click',confirmRename);
 ge('inp-rename').addEventListener('keydown',e=>{if(e.key==='Enter')confirmRename();});
-document.querySelectorAll('.ct').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.ct').forEach(x=>x.classList.remove('act'));this.classList.add('act');chartP=this.dataset.p;renderCharts();}));
+document.querySelectorAll('.ct[data-p]').forEach(b=>b.addEventListener('click',function(){
+  document.querySelectorAll('.ct[data-p]').forEach(x=>x.classList.remove('act'));
+  this.classList.add('act');chartP=this.dataset.p;renderCharts();
+}));
+document.querySelectorAll('.ct[data-p2]').forEach(b=>b.addEventListener('click',function(){
+  document.querySelectorAll('.ct[data-p2]').forEach(x=>x.classList.remove('act'));
+  this.classList.add('act');radarP=this.dataset.p2;renderRadar();
+}));
 
 // Event delegation for exercise name editing
 document.addEventListener('click',function(ev){
