@@ -1185,21 +1185,20 @@ function renderCalendar(){
   // Next month
   const rem=cells.length%7;if(rem>0){for(let i=1;i<=7-rem;i++)cells.push({day:i,cur:false,ts:new Date(year,month+1,i).getTime()});}
 
-  ge('cal-days').innerHTML=cells.map(cell=>{
+  const calData=cells.map(cell=>{
     const dayStr=new Date(cell.ts).toDateString();
     const hasSession=S.sessions.some(s=>new Date(s.savedAt||s.start).toDateString()===dayStr);
-    const manual=S.calManual&&S.calManual[dayStr];
     const manualType=S.calManual&&S.calManual[dayStr]?S.calManual[dayStr]:null;
-    const active=hasSession||manualType==='seance';
     const isToday=new Date(cell.ts).toDateString()===now.toDateString();
-    let dayClass='cal-day';
-    if(hasSession||manualType==='seance')dayClass+=' cal-seance';
-    else if(manualType==='repos')dayClass+=' cal-repos';
-    else if(manualType==='vacances')dayClass+=' cal-vacances';
-    if(isToday)dayClass+=' today';
-    if(!cell.cur)dayClass+=' other-month';
+    let cls='cal-day';
+    if(hasSession||manualType==='seance')cls+=' cal-seance';
+    else if(manualType==='repos')cls+=' cal-repos';
+    else if(manualType==='vacances')cls+=' cal-vacances';
+    if(isToday)cls+=' today';
+    if(!cell.cur)cls+=' other-month';
     const dotColor=hasSession||manualType==='seance'?'var(--green)':manualType==='repos'?'var(--orange)':manualType==='vacances'?'var(--red)':'transparent';
-    return{dayStr,cell,cls:dayClass,dot:hasSession||manualType?`<div class="cal-dot" style="background:${dotColor}"></div>`:''};
+    const dot=hasSession||manualType?`<div class="cal-dot" style="background:${dotColor}"></div>`:'';
+    return{dayStr,cell,cls,dot};
   });
 
   // Build DOM with pointer drag support
