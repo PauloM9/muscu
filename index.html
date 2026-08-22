@@ -110,7 +110,7 @@ select option{background:var(--card2)}
 .exo-block{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:.6rem}
 .exo-head{display:flex;align-items:center;padding:.7rem .85rem;gap:.6rem}
 .exo-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
-.exo-nm{font-weight:800;font-size:.9rem;line-height:1.2}
+.exo-nm{font-weight:800;font-size:.88rem;line-height:1.3;word-break:break-word;white-space:normal}
 .exo-sub{font-size:.67rem;color:var(--t3);margin-top:.15rem;font-weight:600}
 .exo-body{padding:0 .7rem .7rem}
 
@@ -192,6 +192,9 @@ select option{background:var(--card2)}
 .cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   cursor:pointer;font-size:.72rem;font-weight:700;background:var(--card);border:1px solid var(--border);
   transition:all .18s;position:relative}
+.cal-day.cal-seance{background:rgba(0,245,160,.12);border-color:rgba(0,245,160,.3);color:var(--green)}
+.cal-day.cal-repos{background:rgba(255,179,71,.1);border-color:rgba(255,179,71,.3);color:var(--orange)}
+.cal-day.cal-vacances{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.3);color:var(--red)}
 .cal-day.has-session{background:rgba(0,245,160,.12);border-color:rgba(0,245,160,.3);color:var(--green)}
 .cal-day.today{border-color:rgba(72,202,228,.4);color:var(--ice)}
 .cal-day.other-month{opacity:.3}
@@ -332,6 +335,20 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </div>
 </div>
 
+<!-- CAL DAY MODAL -->
+<div id="m-cal-day" class="modal-ov ctr" style="display:none">
+  <div class="modal rd" style="padding:1.1rem .85rem">
+    <div class="m-title" id="cal-day-label"></div>
+    <input type="hidden" id="cal-day-str">
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem">
+      <button id="cal-btn-seance" class="btn" style="width:100%;background:rgba(0,245,160,.15);color:var(--green);border:1px solid rgba(0,245,160,.3);padding:.65rem;font-size:.9rem" onclick="setCalDay('seance')">💪 Séance d'entraînement</button>
+      <button id="cal-btn-repos" class="btn" style="width:100%;background:rgba(255,179,71,.1);color:var(--orange);border:1px solid rgba(255,179,71,.3);padding:.65rem;font-size:.9rem" onclick="setCalDay('repos')">😴 Jour de repos</button>
+      <button id="cal-btn-vacances" class="btn" style="width:100%;background:rgba(255,107,107,.1);color:var(--red);border:1px solid rgba(255,107,107,.3);padding:.65rem;font-size:.9rem" onclick="setCalDay('vacances')">🏖️ Vacances</button>
+    </div>
+    <button class="btn btn-ghost" style="width:100%" onclick="ge('m-cal-day').style.display='none'">Annuler</button>
+  </div>
+</div>
+
 <!-- REST BAR -->
 <div class="rest-bar" id="rest-bar">
   <div style="display:flex;align-items:center;gap:.6rem">
@@ -420,6 +437,19 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <button class="btn btn-ghost" style="width:100%;margin-top:.65rem" id="btn-cancel-replace">Annuler</button>
   </div>
 </div>
+<div id="m-rename" class="modal-ov ctr" style="display:none">
+  <div class="modal rd" style="padding:1.2rem .9rem">
+    <div class="m-title">✏️ Renommer l'exercice</div>
+    <div class="form-g">
+      <input type="text" id="inp-rename" placeholder="Nouveau nom..." style="font-size:1rem">
+    </div>
+    <div style="display:flex;gap:.45rem;margin-top:.75rem">
+      <button class="btn btn-ghost" style="flex:1" id="btn-cancel-rename">Annuler</button>
+      <button class="btn btn-ice" style="flex:2" id="btn-confirm-rename">Valider</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const EX=[
   // PECTORAUX
@@ -971,7 +1001,7 @@ function renderMExos(){
     blk.innerHTML=`
       <div class="rse-head">
         <span class="drag-handle" style="cursor:grab">⠿</span>
-        <div class="exo-rename-btn" data-exo-id="${ex.id}" style="flex:1;min-width:0;font-weight:700;font-size:.83rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;padding:.2rem .3rem;border-radius:6px">${exoName(ex.id)} <span style="font-size:.6rem;color:var(--t3)">✏️</span></div>
+        <div class="exo-rename-btn" data-exo-id="${ex.id}" style="flex:1;min-width:0;font-weight:700;font-size:.83rem;cursor:pointer;padding:.2rem .3rem;border-radius:6px;word-break:break-word;line-height:1.3">${exoName(ex.id)} <span style="font-size:.6rem;color:var(--t3)">✏️</span></div>
         <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">
           <span style="font-size:.65rem;color:var(--t3);font-weight:700">Récup:</span>
           <select style="width:62px;padding:.22rem .25rem;font-size:.72rem;border-radius:7px" onchange="tmpExos[${i}].restTime=+this.value">${restOpts}</select>
@@ -981,6 +1011,20 @@ function renderMExos(){
       <div class="rse-body" id="rse-sets-${i}"></div>
       <div style="padding:0 .7rem .55rem"><button class="btn btn-ghost btn-xs" onclick="addRSESet(${i})">+ Série</button></div>`;
 
+    blk.draggable=true;
+    blk.dataset.idx=i;
+    blk.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',i);blk.style.opacity='.5';});
+    blk.addEventListener('dragend',()=>{blk.style.opacity='1';});
+    blk.addEventListener('dragover',e=>{e.preventDefault();});
+    blk.addEventListener('drop',e=>{
+      e.preventDefault();
+      const from=+e.dataTransfer.getData('text/plain');
+      const to=+blk.dataset.idx;
+      if(from===to)return;
+      const moved=tmpExos.splice(from,1)[0];
+      tmpExos.splice(to,0,moved);
+      renderMExos();
+    });
     c.appendChild(blk);
     // Wire rename button
     const rnBtn=blk.querySelector('.exo-rename-btn');
@@ -1129,27 +1173,47 @@ function renderCalendar(){
     const dayStr=new Date(cell.ts).toDateString();
     const hasSession=S.sessions.some(s=>new Date(s.savedAt||s.start).toDateString()===dayStr);
     const manual=S.calManual&&S.calManual[dayStr];
-    const active=hasSession||manual;
+    const manualType=S.calManual&&S.calManual[dayStr]?S.calManual[dayStr]:null;
+    const active=hasSession||manualType==='seance';
     const isToday=new Date(cell.ts).toDateString()===now.toDateString();
-    return`<div class="cal-day${active?' has-session':''}${isToday?' today':''}${!cell.cur?' other-month':''}" onclick="calDayClick('${dayStr}',${cell.ts},${active},${cell.cur})">
+    let dayClass='cal-day';
+    if(hasSession||manualType==='seance')dayClass+=' cal-seance';
+    else if(manualType==='repos')dayClass+=' cal-repos';
+    else if(manualType==='vacances')dayClass+=' cal-vacances';
+    if(isToday)dayClass+=' today';
+    if(!cell.cur)dayClass+=' other-month';
+    const dotColor=hasSession||manualType==='seance'?'var(--green)':manualType==='repos'?'var(--orange)':manualType==='vacances'?'var(--red)':'transparent';
+    return`<div class="${dayClass}" onclick="calDayClick('${dayStr}',${cell.ts},${active},${cell.cur})">
       ${cell.day}
-      ${active?'<div class="cal-dot"></div>':''}
+      ${(hasSession||manualType)?`<div class="cal-dot" style="background:${dotColor}"></div>`:''}
     </div>`;
   }).join('');
 }
 function calDayClick(dayStr,ts,hasActive,isCurrent){
-  // Check if there's a session for this day
   const daySessions=S.sessions.filter(s=>new Date(s.savedAt||s.start).toDateString()===dayStr);
   if(daySessions.length>0){
-    // Show session detail
     const idx=S.sessions.indexOf(daySessions[daySessions.length-1]);
     openDet(idx);return;
   }
-  // Toggle manual
+  // Show day type picker
   if(!S.calManual)S.calManual={};
-  if(S.calManual[dayStr])delete S.calManual[dayStr];
-  else S.calManual[dayStr]=true;
-  save();renderCalendar();
+  const cur=S.calManual[dayStr]||null;
+  ge('cal-day-label').textContent=new Date(ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  ge('cal-day-str').value=dayStr;
+  // Set active button
+  ['seance','repos','vacances'].forEach(t=>{
+    ge('cal-btn-'+t).style.opacity=cur===t?'1':'.45';
+    ge('cal-btn-'+t).style.boxShadow=cur===t?'0 0 0 2px var(--ice)':'none';
+  });
+  ge('m-cal-day').style.display='flex';
+}
+function setCalDay(type){
+  const dayStr=ge('cal-day-str').value;
+  if(!dayStr)return;
+  if(!S.calManual)S.calManual={};
+  if(S.calManual[dayStr]===type)delete S.calManual[dayStr];
+  else S.calManual[dayStr]=type;
+  save();ge('m-cal-day').style.display='none';renderCalendar();
 }
 
 // ── DETAIL ──
@@ -1318,7 +1382,8 @@ window.updS=updS;window.togSet=togSet;
 window.openRModal=openRModal;
 window.openDet=openDet;window.delSession=delSession;
 window.calDayClick=calDayClick;
-window.setMF=setMF;window.pickEx=pickEx;
+window.setMF=setMF;
+window.setCalDay=setCalDay;window.pickEx=pickEx;
 window.setRF=setRF;window.pickReplace=pickReplace;
 window.filterReplaceExos=filterReplaceExos;
 window.insEmoji=insEmoji;
@@ -1338,18 +1403,5 @@ if(S._restStart&&S._restTotal){
   else{S._restStart=null;S._restTotal=0;save();}
 }
 renderHome();
-</script>
-<div id="m-rename" class="modal-ov ctr" style="display:none">
-  <div class="modal rd" style="padding:1.2rem .9rem">
-    <div class="m-title">✏️ Renommer l'exercice</div>
-    <div class="form-g">
-      <input type="text" id="inp-rename" placeholder="Nouveau nom..." style="font-size:1rem">
-    </div>
-    <div style="display:flex;gap:.45rem;margin-top:.75rem">
-      <button class="btn btn-ghost" style="flex:1" id="btn-cancel-rename">Annuler</button>
-      <button class="btn btn-ice" style="flex:2" id="btn-confirm-rename">Valider</button>
-    </div>
-  </div>
-</div>
-</body>
+</script></body>
 </html>
