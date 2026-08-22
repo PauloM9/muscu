@@ -446,6 +446,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.7rem">
       <button class="btn btn-ice" style="width:100%" id="btn-save-wo">💾 Enregistrer</button>
       <button class="btn btn-danger" style="width:100%" id="btn-discard-wo">🗑️ Ne pas enregistrer</button>
+      <button class="btn btn-ghost" style="width:100%" id="btn-back-wo">↩ Reprendre la séance</button>
     </div>
   </div>
 </div>
@@ -1632,6 +1633,11 @@ ge('btn-add-exo-r').addEventListener('click',addExoToRoutineModal);
 ge('btn-cancel-r').addEventListener('click',closeRModal);
 ge('btn-save-r').addEventListener('click',saveRoutine);
 ge('btn-cancel-exo').addEventListener('click',closeExoModal);
+ge('btn-back-wo').addEventListener('click',()=>{
+  ge('m-finish').style.display='none';
+  // Restart timer
+  startWTimer();
+});
 ge('btn-save-wo').addEventListener('click',saveWO);
 ge('btn-discard-wo').addEventListener('click',discardWO);
 ge('btn-close-det').addEventListener('click',closeDet);
