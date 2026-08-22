@@ -1272,15 +1272,38 @@ function setCalDay(type){
 function openDet(i){
   const s=S.sessions[i];
   ge('det-title').textContent=s.name+' — '+fDate(s.savedAt||s.start);
+  renderDetBody(i,false);
+  ge('m-detail').style.display='flex';
+}
+function renderDetBody(i,editMode){
+  const s=S.sessions[i];
   let prev=null;
   for(let j=i-1;j>=0;j--){if(S.sessions[j].name===s.name){prev=S.sessions[j];break;}}
   const sv=s.volume||calcVol(s),ss=s.totalSets||calcSets(s),sr=s.totalReps||calcReps(s);
-  let h=`<div class="stats-row s3" style="margin-bottom:.8rem">
-    <div class="stat-box"><div class="sv">${fDur(s.duration||0)}</div><div class="sl">Durée</div></div>
-    <div class="stat-box"><div class="sv">${ss}</div><div class="sl">Séries</div></div>
-    <div class="stat-box"><div class="sv">${fKg(sv)}</div><div class="sl">Volume</div></div>
-  </div>`;
-  if(prev){
+
+  let h='';
+
+  // Edit mode: editable duration
+  if(editMode){
+    const durMin=Math.floor((s.duration||0)/60000);
+    const durSec=Math.floor(((s.duration||0)%60000)/1000);
+    h+=`<div style="background:rgba(72,202,228,.08);border:1px solid rgba(72,202,228,.2);border-radius:12px;padding:.7rem .85rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <span style="font-size:.72rem;color:var(--t3);font-weight:700;text-transform:uppercase">Durée :</span>
+      <input type="number" id="edit-dur-min" value="${durMin}" min="0" max="999" style="width:55px;text-align:center;font-size:.9rem;font-weight:700">
+      <span style="color:var(--t3);font-weight:700">min</span>
+      <input type="number" id="edit-dur-sec" value="${durSec}" min="0" max="59" style="width:50px;text-align:center;font-size:.9rem;font-weight:700">
+      <span style="color:var(--t3);font-weight:700">sec</span>
+    </div>`;
+  } else {
+    h+=`<div class="stats-row s3" style="margin-bottom:.8rem">
+      <div class="stat-box"><div class="sv">${fDur(s.duration||0)}</div><div class="sl">Durée</div></div>
+      <div class="stat-box"><div class="sv">${ss}</div><div class="sl">Séries</div></div>
+      <div class="stat-box"><div class="sv">${fKg(sv)}</div><div class="sl">Volume</div></div>
+    </div>`;
+  }
+
+  // Comparison
+  if(!editMode&&prev){
     const dv=sv-(prev.volume||0),ds=ss-(prev.totalSets||calcSets(prev));
     h+=`<div style="font-size:.66rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:.4rem">vs précédente</div>
     <div class="card" style="margin-bottom:.75rem">
@@ -1288,27 +1311,115 @@ function openDet(i){
       <div class="cmp-row" style="border:none"><span>Séries</span><span class="${ds>0?'up':ds<0?'dn':'eq'}">${ds>0?'+':''}${ds} ${ds>0?'▲':ds<0?'▼':'='}</span></div>
     </div>`;
   }
-  h+=`<div style="font-size:.66rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:.4rem">Exercices</div>`;
-  s.exercises.forEach(ex=>{
-    const d=ex.sets.filter(s=>s.done);if(!d.length)return;
+
+  h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+    <div style="font-size:.66rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.3px">Exercices</div>
+    ${editMode?'':''}
+  </div>`;
+
+  // Exercises
+  s.exercises.forEach((ex,ei)=>{
+    const done=editMode?ex.sets:ex.sets.filter(st=>st.done);
+    if(!done.length)return;
     const def=exoDef(ex.id);
     const prW=getPR(ex.id,'weight');
-    h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--border)">
-      <div style="font-weight:800;font-size:.87rem;margin-bottom:.32rem">${exoName(ex.id)}</div>
-      ${d.map((s,i)=>{
-        const isPR=!ex.bw&&prW>0&&(s.weight||0)>=prW&&(s.weight||0)>0;
-        return`<div style="font-size:.79rem;color:var(--t2);display:flex;gap:.9rem;padding:.16rem 0;font-weight:600;align-items:center">
-          <span style="color:var(--t3);min-width:16px;font-weight:800">${i+1}</span>
-          ${!ex.bw?`<span style="color:${isPR?'var(--gold)':'var(--ice)'};font-weight:800">${s.weight||0}kg${isPR?' 🥇':''}</span>`:'<span class="bw-tag">BW</span>'}
-          <span>${s.reps||0} reps</span>
-          ${!ex.bw?`<span style="color:var(--t3)">${((s.reps||0)*(s.weight||0)).toFixed(0)}kg vol</span>`:''}
+    h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.65rem .8rem;margin-bottom:.45rem;border:1px solid var(--border)">
+      <div style="font-weight:800;font-size:.87rem;margin-bottom:.38rem">${exoName(ex.id)}</div>`;
+    if(editMode){
+      // Editable sets table
+      h+=`<table style="width:100%;border-collapse:collapse;margin-bottom:.35rem">
+        <thead><tr>
+          <th style="font-size:.6rem;color:var(--t4);padding:.25rem .15rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase">#</th>
+          ${ex.bw?'':`<th style="font-size:.6rem;color:var(--t4);padding:.25rem .15rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase">kg</th>`}
+          <th style="font-size:.6rem;color:var(--t4);padding:.25rem .15rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase">Reps</th>
+          <th style="font-size:.6rem;color:var(--t4);padding:.25rem .15rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase">✓</th>
+          <th style="font-size:.6rem;color:var(--t4);padding:.25rem .15rem;text-align:center;border-bottom:1px solid var(--border);font-weight:700;text-transform:uppercase">✕</th>
+        </tr></thead><tbody>`;
+      ex.sets.forEach((st,si)=>{
+        h+=`<tr style="${st.done?'background:rgba(0,245,160,.04)':''}">
+          <td style="text-align:center;font-size:.72rem;color:var(--t3);font-weight:800;padding:.22rem .1rem">${si+1}</td>
+          ${ex.bw?'':`<td style="padding:.22rem .08rem"><input type="number" min="0" step="0.5" value="${st.weight||0}" style="width:52px;text-align:center;font-size:.82rem;font-weight:700;padding:.22rem .08rem;border-radius:7px" onchange="editSetField(${i},${ei},${si},'weight',this.value)"></td>`}
+          <td style="padding:.22rem .08rem"><input type="number" min="0" value="${st.reps||0}" style="width:52px;text-align:center;font-size:.82rem;font-weight:700;padding:.22rem .08rem;border-radius:7px" onchange="editSetField(${i},${ei},${si},'reps',this.value)"></td>
+          <td style="text-align:center"><button style="width:26px;height:26px;border-radius:7px;border:${st.done?'none':'1.5px solid var(--border)'};background:${st.done?'var(--green)':'none'};color:${st.done?'#000':'transparent'};cursor:pointer;font-size:.8rem" onclick="toggleDetSet(${i},${ei},${si})">${st.done?'✓':''}</button></td>
+          <td style="text-align:center"><button style="width:22px;height:22px;border-radius:5px;border:none;background:rgba(255,107,107,.1);color:var(--red);cursor:pointer;font-size:.7rem" onclick="delDetSet(${i},${ei},${si})">✕</button></td>
+        </tr>`;
+      });
+      h+=`</tbody></table>
+        <button class="btn btn-ghost btn-xs" onclick="addDetSet(${i},${ei})">+ Série</button>`;
+    } else {
+      done.forEach((st,si)=>{
+        const isPR=!ex.bw&&prW>0&&(st.weight||0)>=prW&&(st.weight||0)>0;
+        h+=`<div style="font-size:.79rem;color:var(--t2);display:flex;gap:.9rem;padding:.16rem 0;font-weight:600;align-items:center">
+          <span style="color:var(--t3);min-width:16px;font-weight:800">${si+1}</span>
+          ${!ex.bw?`<span style="color:${isPR?'var(--gold)':'var(--ice)'};font-weight:800">${st.weight||0}kg${isPR?' 🥇':''}</span>`:'<span class="bw-tag">BW</span>'}
+          <span>${st.reps||0} reps</span>
+          ${!ex.bw?`<span style="color:var(--t3)">${((st.reps||0)*(st.weight||0)).toFixed(0)}kg vol</span>`:''}
         </div>`;
-      }).join('')}
-    </div>`;
+      });
+    }
+    h+=`</div>`;
   });
-  if(s.notes)h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.6rem .8rem;font-size:.82rem;color:var(--t2);border:1px solid var(--border);font-weight:600;margin-top:.3rem">💬 ${s.notes}</div>`;
-  ge('det-body').innerHTML=h;ge('m-detail').style.display='flex';
+
+  if(s.notes&&!editMode)h+=`<div style="background:rgba(12,24,36,.8);border-radius:11px;padding:.6rem .8rem;font-size:.82rem;color:var(--t2);border:1px solid var(--border);font-weight:600;margin-top:.3rem">💬 ${s.notes}</div>`;
+
+  // Buttons
+  if(editMode){
+    h+=`<div style="display:flex;gap:.45rem;margin-top:.85rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="cancelDetEdit(${i})">Annuler</button>
+      <button class="btn btn-ice" style="flex:2" onclick="saveDetEdit(${i})">💾 Sauvegarder</button>
+    </div>`;
+  } else {
+    h+=`<button class="btn" style="width:100%;margin-top:.75rem;background:rgba(72,202,228,.08);color:var(--ice2);border:1px solid rgba(72,202,228,.18);font-size:.86rem" onclick="startDetEdit(${i})">✏️ Modifier cette séance</button>`;
+  }
+
+  ge('det-body').innerHTML=h;
 }
+
+// Edit helpers
+let _detEditBackup=null;
+function startDetEdit(i){
+  _detEditBackup=JSON.parse(JSON.stringify(S.sessions[i]));
+  renderDetBody(i,true);
+}
+function cancelDetEdit(i){
+  if(_detEditBackup)S.sessions[i]=_detEditBackup;
+  _detEditBackup=null;save();
+  renderDetBody(i,false);
+}
+function saveDetEdit(i){
+  // Save duration
+  const durMin=+( ge('edit-dur-min')?.value||0);
+  const durSec=+( ge('edit-dur-sec')?.value||0);
+  S.sessions[i].duration=(durMin*60+durSec)*1000;
+  // Recalculate totals
+  S.sessions[i].volume=calcVol(S.sessions[i]);
+  S.sessions[i].totalSets=calcSets(S.sessions[i]);
+  S.sessions[i].totalReps=calcReps(S.sessions[i]);
+  _detEditBackup=null;save();
+  renderDetBody(i,false);
+  renderHistory();
+}
+function editSetField(si,ei,setIdx,field,val){
+  const set=S.sessions[si].exercises[ei].sets[setIdx];
+  set[field]=field==='reps'?parseInt(val)||0:parseFloat(val)||0;
+}
+function toggleDetSet(si,ei,setIdx){
+  const set=S.sessions[si].exercises[ei].sets[setIdx];
+  set.done=!set.done;
+  renderDetBody(si,true);
+}
+function delDetSet(si,ei,setIdx){
+  S.sessions[si].exercises[ei].sets.splice(setIdx,1);
+  renderDetBody(si,true);
+}
+function addDetSet(si,ei){
+  const sets=S.sessions[si].exercises[ei].sets;
+  const last=sets[sets.length-1]||{weight:0,reps:10,done:true};
+  sets.push({weight:last.weight,reps:last.reps,done:true});
+  renderDetBody(si,true);
+}
+
+
 function closeDet(){ge('m-detail').style.display='none';}
 
 // ── CHARTS ──
@@ -1444,6 +1555,8 @@ window.addSet=addSet;window.delSet=delSet;
 window.updS=updS;window.togSet=togSet;
 window.openRModal=openRModal;
 window.openDet=openDet;window.delSession=delSession;
+window.startDetEdit=startDetEdit;window.cancelDetEdit=cancelDetEdit;window.saveDetEdit=saveDetEdit;
+window.editSetField=editSetField;window.toggleDetSet=toggleDetSet;window.delDetSet=delDetSet;window.addDetSet=addDetSet;
 window.calDayClick=calDayClick;
 window.setMF=setMF;
 window.setCalDay=setCalDay;
