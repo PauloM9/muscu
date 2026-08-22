@@ -1017,12 +1017,23 @@ function addExoToActive(){
 }
 
 // ── ROUTINES ──
+function moveRoutine(i,dir){
+  const j=i+dir;
+  if(j<0||j>=S.routines.length)return;
+  const tmp=S.routines[i];S.routines[i]=S.routines[j];S.routines[j]=tmp;
+  save();renderRoutines();
+}
 function renderRoutines(){
   const c=ge('routines-list');
   if(!S.routines.length){c.innerHTML=`<div class="empty"><div class="ei">📋</div><p style="font-weight:700;margin-bottom:.8rem">Aucune routine</p><button class="btn btn-ice" onclick="openRModal()">+ Créer</button></div>`;return;}
   c.innerHTML=S.routines.map((r,i)=>{
     const est=estDur(r);
+    const isFirst=i===0,isLast=i===S.routines.length-1;
     return`<div class="r-card">
+      <div style="display:flex;flex-direction:column;gap:.2rem;flex-shrink:0;margin-right:.3rem">
+        <button class="btn-icon" style="font-size:.9rem;padding:.15rem;${isFirst?'opacity:.25;pointer-events:none':''}" onclick="moveRoutine(${i},-1)" title="Monter">▲</button>
+        <button class="btn-icon" style="font-size:.9rem;padding:.15rem;${isLast?'opacity:.25;pointer-events:none':''}" onclick="moveRoutine(${i},1)" title="Descendre">▼</button>
+      </div>
       <div style="flex:1;min-width:0">
         <div class="r-name">${r.name}</div>
         <div class="r-meta">${r.exercises.length} ex · ~${est} min · ${r.exercises.reduce((a,e)=>a+(e.sets?e.sets.length:e.dSets||3),0)} séries</div>
@@ -1036,6 +1047,7 @@ function renderRoutines(){
     </div>`;
   }).join('');
 }
+
 function openRModal(idx=null){
   rEditIdx=idx;tmpExos=[];
   ge('rm-title').textContent=idx!==null?'Modifier la routine':'Nouvelle routine';
@@ -1641,7 +1653,7 @@ document.addEventListener('click',function(ev){
 
 // Expose onclick functions used in dynamic HTML
 window.startRoutine=startRoutine;
-window.editR=editR;window.delR=delR;
+window.editR=editR;window.delR=delR;window.moveRoutine=moveRoutine;
 window.rmExo=rmExo;window.replaceExo=replaceExo;
 window.addSet=addSet;window.delSet=delSet;
 window.updS=updS;window.togSet=togSet;
