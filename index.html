@@ -26,11 +26,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
   background:rgba(7,16,26,.97);backdrop-filter:blur(24px);
   border-bottom:1px solid rgba(72,202,228,.1);
-  display:flex;align-items:center;justify-content:space-between;padding:0 1rem}
-.logo{font-weight:900;font-size:1rem;color:var(--text);white-space:nowrap;letter-spacing:.2px}
-.nav-tabs{display:flex;gap:.15rem}
-.ntb{background:none;border:none;color:var(--t3);font-size:.68rem;font-weight:700;
-  padding:.38rem .6rem;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 .55rem 0 .7rem}
+.logo{font-weight:900;font-size:.88rem;color:var(--text);white-space:nowrap;letter-spacing:.1px}
+.nav-tabs{display:flex;gap:.1rem}
+.ntb{background:none;border:none;color:var(--t3);font-size:.65rem;font-weight:700;
+  padding:.38rem .52rem;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
   align-items:center;gap:.1rem;transition:all .18s;text-transform:uppercase;letter-spacing:.2px}
 .ntb .ico{font-size:.95rem;line-height:1}
 .ntb.act{color:var(--ice);background:rgba(72,202,228,.1);box-shadow:inset 0 0 0 1px rgba(72,202,228,.2)}
@@ -775,7 +776,12 @@ function startWTimer(){
 // ── ACTIVE WORKOUT ──
 function renderActive(){
   const c=ge('active-exos');c.innerHTML='';
-  S.cw.exercises.forEach((ex,ei)=>c.appendChild(buildExoBlock(ex,ei)));
+  S.cw.exercises.forEach((ex,ei)=>{
+    const blk=buildExoBlock(ex,ei);
+    c.appendChild(blk);
+    // MUST call renderSets AFTER appendChild so ge('sets-'+ei) finds the element
+    renderSets(ei);
+  });
 }
 
 function buildExoBlock(ex,ei){
@@ -860,7 +866,6 @@ function buildExoBlock(ex,ei){
     save();renderActive();
   });
 
-  renderSets(ei,prW);
   return div;
 }
 
