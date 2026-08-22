@@ -197,6 +197,7 @@ select option{background:var(--card2)}
 .cal-day.cal-vacances{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.3);color:var(--red)}
 .cal-day.has-session{background:rgba(0,245,160,.12);border-color:rgba(0,245,160,.3);color:var(--green)}
 .cal-day.today{border-color:rgba(72,202,228,.4);color:var(--ice)}
+.cal-day.cal-sel{outline:2px solid var(--ice);outline-offset:1px;transform:scale(.95)}
 .cal-day.other-month{opacity:.3}
 .cal-day:active{opacity:.7}
 .cal-dot{width:5px;height:5px;border-radius:50%;background:var(--green);position:absolute;bottom:3px}
@@ -333,6 +334,20 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <div id="history-list"></div>
   </div>
 </div>
+</div>
+
+<!-- CAL MULTI-DAY MODAL -->
+<div id="m-cal-multi" class="modal-ov ctr" style="display:none">
+  <div class="modal rd" style="padding:1.1rem .85rem">
+    <div class="m-title" id="cal-multi-count">Jours sélectionnés</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem">
+      <button class="btn" style="width:100%;background:rgba(0,245,160,.15);color:var(--green);border:1px solid rgba(0,245,160,.3);padding:.65rem;font-size:.9rem" onclick="setCalDayMulti('seance')">💪 Séance d'entraînement</button>
+      <button class="btn" style="width:100%;background:rgba(255,179,71,.1);color:var(--orange);border:1px solid rgba(255,179,71,.3);padding:.65rem;font-size:.9rem" onclick="setCalDayMulti('repos')">😴 Jour de repos</button>
+      <button class="btn" style="width:100%;background:rgba(255,107,107,.1);color:var(--red);border:1px solid rgba(255,107,107,.3);padding:.65rem;font-size:.9rem" onclick="setCalDayMulti('vacances')">🏖️ Vacances</button>
+      <button class="btn" style="width:100%;background:rgba(255,255,255,.05);color:var(--t3);border:1px solid var(--border);padding:.55rem;font-size:.85rem" onclick="setCalDayMulti(null)">✕ Effacer</button>
+    </div>
+    <button class="btn btn-ghost" style="width:100%" onclick="ge('m-cal-multi').style.display='none'">Annuler</button>
+  </div>
 </div>
 
 <!-- CAL DAY MODAL -->
@@ -562,6 +577,7 @@ const MUSCLES=['Tous','Pectoraux','Dos','Biceps','Triceps','Épaules','Abdominau
 const EMOJIS=['💪','🔥','⚡','🏆','🎯','👊','🦾','😤','🐉','🦁','🏋️','🚀','❤️','🌟','😈','🤟','⚔️','💎','🌊','☄️','👟','🎽','💀','🦊','🥊','🎪','🏅','🔱','🛡️','🌪️'];
 
 let S={routines:[],sessions:[],cw:null,calManual:{},customNames:{}};
+let calSel=[];
 let wInt=null,wStart=0,wPaused=false,wPausedAt=0,wPausedTotal=0;
 let rInt=null,rTotal=0,rLeft=0;
 let exoCb=null,mFilter='Tous',rEditIdx=null,tmpExos=[];
@@ -1183,11 +1199,50 @@ function renderCalendar(){
     if(isToday)dayClass+=' today';
     if(!cell.cur)dayClass+=' other-month';
     const dotColor=hasSession||manualType==='seance'?'var(--green)':manualType==='repos'?'var(--orange)':manualType==='vacances'?'var(--red)':'transparent';
-    return`<div class="${dayClass}" onclick="calDayClick('${dayStr}',${cell.ts},${active},${cell.cur})">
-      ${cell.day}
-      ${(hasSession||manualType)?`<div class="cal-dot" style="background:${dotColor}"></div>`:''}
-    </div>`;
-  }).join('');
+    return{dayStr,cell,cls:dayClass,dot:hasSession||manualType?`<div class="cal-dot" style="background:${dotColor}"></div>`:''};
+  });
+
+  // Build DOM with pointer drag support
+  const calCont=ge('cal-days');calCont.innerHTML='';
+  let calDrag=false;calSel=[];
+  calData.forEach(({dayStr,cell,cls,dot})=>{
+    const div=document.createElement('div');
+    div.className=cls;div.dataset.ds=dayStr;div.dataset.ts=cell.ts;
+    div.innerHTML=cell.day+dot;
+    calCont.appendChild(div);
+  });
+  // Drag selection
+  function startCalSel(e){
+    const d=e.target.closest('.cal-day');if(!d)return;
+    calDrag=true;calSel=[d.dataset.ds];
+    calCont.querySelectorAll('.cal-day').forEach(el=>el.classList.remove('cal-sel'));
+    d.classList.add('cal-sel');e.preventDefault();
+  }
+  function moveCalSel(e){
+    if(!calDrag)return;
+    const pt=e.touches?e.touches[0]:e;
+    const el=document.elementFromPoint(pt.clientX,pt.clientY);
+    const d=el&&el.closest('.cal-day');
+    if(d&&d.dataset.ds&&!calSel.includes(d.dataset.ds)){calSel.push(d.dataset.ds);d.classList.add('cal-sel');}
+  }
+  function endCalSel(e){
+    if(!calDrag)return;calDrag=false;
+    calCont.querySelectorAll('.cal-sel').forEach(el=>el.classList.remove('cal-sel'));
+    if(!calSel.length)return;
+    if(calSel.length===1){
+      const ts=calCont.querySelector(`[data-ds="${calSel[0]}"]`)?.dataset.ts||0;
+      calDayClick(calSel[0],+ts,false,true);
+    } else {
+      ge('cal-multi-count').textContent=calSel.length+' jours sélectionnés';
+      ge('m-cal-multi').style.display='flex';
+    }
+  }
+  calCont.addEventListener('mousedown',startCalSel);
+  calCont.addEventListener('mousemove',moveCalSel);
+  calCont.addEventListener('mouseup',endCalSel);
+  calCont.addEventListener('touchstart',startCalSel,{passive:false});
+  calCont.addEventListener('touchmove',moveCalSel,{passive:false});
+  calCont.addEventListener('touchend',endCalSel);
 }
 function calDayClick(dayStr,ts,hasActive,isCurrent){
   const daySessions=S.sessions.filter(s=>new Date(s.savedAt||s.start).toDateString()===dayStr);
@@ -1206,6 +1261,14 @@ function calDayClick(dayStr,ts,hasActive,isCurrent){
     ge('cal-btn-'+t).style.boxShadow=cur===t?'0 0 0 2px var(--ice)':'none';
   });
   ge('m-cal-day').style.display='flex';
+}
+function setCalDayMulti(type){
+  if(!S.calManual)S.calManual={};
+  calSel.forEach(ds=>{
+    if(type)S.calManual[ds]=type;
+    else delete S.calManual[ds];
+  });
+  save();ge('m-cal-multi').style.display='none';renderCalendar();
 }
 function setCalDay(type){
   const dayStr=ge('cal-day-str').value;
@@ -1288,13 +1351,24 @@ function getCD(p){
 const cOpts={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4A7FA5',font:{size:9,family:'Nunito',weight:'700'}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4A7FA5',font:{size:9,family:'Nunito',weight:'700'}},beginAtZero:true}}};
 function mkChart(id,data,color,type='bar'){
   const cv=ge(id);if(!cv)return;if(charts[id])charts[id].destroy();
-  charts[id]=new Chart(cv,{type,data:{labels:data.labels,datasets:[{data:data.d,backgroundColor:color+'28',borderColor:color,borderWidth:2,borderRadius:5,fill:type==='line',tension:.4,pointBackgroundColor:color,pointRadius:2}]},options:cOpts});
+  const opts={...cOpts,onClick:(evt,els)=>{
+    if(!els||!els.length)return;
+    const label=data.labels[els[0].index];
+    // Find session matching this label
+    const match=S.sessions.findIndex(s=>{
+      const t=new Date(s.savedAt||s.start);
+      const lbl=chartP==='week'?t.toLocaleDateString('fr-FR',{weekday:'short'}):chartP==='month'?'S-'+Math.floor((new Date()-t)/604800000):t.toLocaleDateString('fr-FR',{month:'short'});
+      return lbl===label;
+    });
+    if(match>-1)openDet(match);
+  }};
+  charts[id]=new Chart(cv,{type,data:{labels:data.labels,datasets:[{data:data.d,backgroundColor:color+'28',borderColor:color,borderWidth:2,borderRadius:5,fill:type==='line',tension:.4,pointBackgroundColor:color,pointRadius:3}]},options:opts});
 }
 function renderCharts(){
   const d=getCD(chartP);
   mkChart('c-vol',{labels:d.labels,d:d.vd},'#48CAE4');
-  mkChart('c-reps',{labels:d.labels,d:d.rd},'#00F5A0','line');
-  mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','line');
+  mkChart('c-reps',{labels:d.labels,d:d.rd},'#00F5A0','bar');
+  mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','bar');
 }
 
 let _renameCb=null;
@@ -1383,7 +1457,8 @@ window.openRModal=openRModal;
 window.openDet=openDet;window.delSession=delSession;
 window.calDayClick=calDayClick;
 window.setMF=setMF;
-window.setCalDay=setCalDay;window.pickEx=pickEx;
+window.setCalDay=setCalDay;
+window.setCalDayMulti=setCalDayMulti;window.pickEx=pickEx;
 window.setRF=setRF;window.pickReplace=pickReplace;
 window.filterReplaceExos=filterReplaceExos;
 window.insEmoji=insEmoji;
