@@ -843,6 +843,7 @@ function buildExoBlock(ex,ei){
   tbl.className='stbl';
   tbl.innerHTML=`<thead><tr>
     <th>#</th>
+    <th style="color:var(--t3)">Préc.</th>
     <th>${ex.bw?'BW':'kg'}</th>
     <th>Reps</th>
     <th>Vol</th>
@@ -880,14 +881,29 @@ function renderSets(ei,prW){
   const ex=S.cw.exercises[ei];
   const tbody=ge('sets-'+ei);if(!tbody)return;
   if(prW===undefined)prW=getPR(ex.id,'weight');
+
+  // Get previous session sets for this exercise
+  const prevSets=(ex._prev&&ex._prev.sets)?ex._prev.sets.filter(s=>s.done):[];
+
   tbody.innerHTML='';
   ex.sets.forEach((s,si)=>{
     const v=ex.bw?'BW':((s.weight||0)*(s.reps||0)).toFixed(0)+'kg';
     const isPR=!ex.bw&&prW>0&&(s.weight||0)>0&&(s.weight||0)>=prW&&s.done;
+    // Previous set data for this index
+    const prev=prevSets[si]||null;
+    const prevTxt=prev
+      ?(ex.bw?`BW×${prev.reps||0}`:`${prev.weight||0}×${prev.reps||0}`)
+      :'—';
+    // Highlight if current is better than previous
+    const isBetter=prev&&!ex.bw&&(
+      (s.weight||0)>(prev.weight||0)||
+      ((s.weight||0)===(prev.weight||0)&&(s.reps||0)>(prev.reps||0))
+    );
     const tr=document.createElement('tr');
     tr.className=s.done?'set-done':'';
     tr.innerHTML=`
       <td><span class="s-num">${si+1}${isPR?' 🥇':''}</span></td>
+      <td style="font-size:.68rem;font-variant-numeric:tabular-nums;white-space:nowrap;color:${isBetter?'var(--green)':prev?'var(--t3)':'var(--t4)'};font-weight:700">${prevTxt}${isBetter?' ▲':''}</td>
       <td>${ex.bw?`<span class="bw-tag">BW</span>`:`<input type="number" class="sinp" value="${s.weight||''}" placeholder="0" min="0" step="0.5" onchange="updS(${ei},${si},'weight',this.value)">`}</td>
       <td><input type="number" class="sinp" value="${s.reps||''}" placeholder="10" min="1" onchange="updS(${ei},${si},'reps',this.value)"></td>
       <td style="font-size:.7rem;color:var(--t3);font-weight:700;font-variant-numeric:tabular-nums">${v}</td>
