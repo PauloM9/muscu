@@ -311,7 +311,14 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <!-- HISTORY -->
 <div id="tab-history" class="section">
   <div class="inner">
-    <div class="sec-head"><div class="sec-title">Statistiques</div></div>
+    <div class="sec-head">
+      <div class="sec-title">Statistiques</div>
+      <div style="display:flex;gap:.35rem">
+        <button class="btn btn-ghost btn-xs" onclick="exportData()" title="Sauvegarder mes données">💾 Export</button>
+        <button class="btn btn-ghost btn-xs" onclick="ge('inp-import').click()" title="Restaurer mes données">📂 Import</button>
+        <input type="file" id="inp-import" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+    </div>
     <!-- Calendar -->
     <div class="card" style="margin-bottom:.8rem">
       <div class="cal-nav">
@@ -1669,7 +1676,69 @@ window.editSetField=editSetField;window.toggleDetSet=toggleDetSet;window.delDetS
 window.calDayClick=calDayClick;
 window.setMF=setMF;
 window.setCalDay=setCalDay;
-window.setCalDayMulti=setCalDayMulti;window.pickEx=pickEx;
+window.setCalDayMulti=setCalDayMulti;
+
+// ── EXPORT / IMPORT ──
+function exportData(){
+  const data={
+    version:4,
+    exportDate:new Date().toISOString(),
+    routines:S.routines,
+    sessions:S.sessions,
+    calManual:S.calManual||{},
+    customNames:S.customNames||{}
+  };
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=new Date().toLocaleDateString('fr-FR',{year:'numeric',month:'2-digit',day:'2-digit'}).split('/').join('-');
+  a.href=url;a.download='road-to-super-sayan-'+dateStr+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅ Sauvegarde téléchargée !','var(--green)');
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.routines&&!data.sessions)throw new Error('Format invalide');
+      const d2=data.exportDate?new Date(data.exportDate).toLocaleDateString('fr-FR'):'?';
+      const nb_r=data.routines?data.routines.length:0;
+      const nb_s=data.sessions?data.sessions.length:0;
+      const ok=confirm('Importer la sauvegarde du '+d2+' ? ('+nb_r+' routines, '+nb_s+' séances). Cela remplacera tes données actuelles.');
+      if(!ok){input.value='';return;}
+      if(data.routines)S.routines=data.routines;
+      if(data.sessions)S.sessions=data.sessions;
+      if(data.calManual)S.calManual=data.calManual;
+      if(data.customNames)S.customNames=data.customNames;
+      save();
+      renderHistory();renderCalendar();renderCharts();
+      showToast('✅ Données restaurées avec succès !','var(--green)');
+    }catch(err){
+      showToast('❌ Fichier invalide','var(--red)');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+function showToast(msg,color){
+  let t=ge('toast-msg');
+  if(!t){t=document.createElement('div');t.id='toast-msg';
+    t.style.cssText='position:fixed;bottom:calc(var(--nav)+12px);left:50%;transform:translateX(-50%);'+
+      'padding:.55rem 1.1rem;border-radius:12px;font-size:.85rem;font-weight:700;'+
+      'z-index:999;white-space:nowrap;transition:opacity .3s;backdrop-filter:blur(12px)';
+    document.body.appendChild(t);}
+  t.textContent=msg;
+  t.style.background=color==='var(--green)'?'rgba(0,245,160,.15)':'rgba(255,107,107,.15)';
+  t.style.color=color;t.style.border='1px solid '+color;
+  t.style.opacity='1';
+  clearTimeout(t._hide);t._hide=setTimeout(()=>{t.style.opacity='0';},2800);
+}
+window.exportData=exportData;
+window.importData=importData;window.pickEx=pickEx;
 window.setRF=setRF;window.pickReplace=pickReplace;
 window.filterReplaceExos=filterReplaceExos;
 window.insEmoji=insEmoji;
