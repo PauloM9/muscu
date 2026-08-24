@@ -142,17 +142,17 @@ select option{background:var(--card2)}
 
 /* REST BAR */
 .rest-bar{position:fixed;bottom:var(--nav);left:0;right:0;z-index:90;
-  background:rgba(7,16,26,.98);backdrop-filter:blur(24px);
-  border-top:1px solid rgba(72,202,228,.25);
-  padding:.55rem .85rem;display:none;align-items:center;justify-content:space-between;
-  gap:.7rem;box-shadow:0 -6px 24px rgba(72,202,228,.1)}
+  background:rgba(7,16,26,.99);backdrop-filter:blur(24px);
+  border-top:2px solid rgba(72,202,228,.4);
+  padding:.75rem 1rem;display:none;align-items:center;justify-content:space-between;
+  gap:.8rem;box-shadow:0 -8px 32px rgba(72,202,228,.2)}
 .rest-bar.on{display:flex}
-.rest-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+.rest-ring{position:relative;width:58px;height:58px;flex-shrink:0}
 .rest-ring svg{transform:rotate(-90deg)}
 .ring-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:.82rem;font-weight:900;color:var(--ice);font-variant-numeric:tabular-nums}
-.rest-t{font-size:1.35rem;font-weight:900;color:var(--ice);font-variant-numeric:tabular-nums;line-height:1}
-.rest-lbl{font-size:.62rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+  font-size:1rem;font-weight:900;color:var(--ice);font-variant-numeric:tabular-nums}
+.rest-t{font-size:1.7rem;font-weight:900;color:var(--ice);font-variant-numeric:tabular-nums;line-height:1}
+.rest-lbl{font-size:.65rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
 
 /* MODAL */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;
@@ -435,9 +435,9 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <div class="rest-bar" id="rest-bar">
   <div style="display:flex;align-items:center;gap:.6rem">
     <div class="rest-ring">
-      <svg width="44" height="44" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r="18" stroke="rgba(72,202,228,.12)" stroke-width="4" fill="none"/>
-        <circle id="r-arc" cx="22" cy="22" r="18" stroke="#48CAE4" stroke-width="4" fill="none" stroke-dasharray="113" stroke-dashoffset="0" stroke-linecap="round"/>
+      <svg width="58" height="58" viewBox="0 0 58 58">
+        <circle cx="29" cy="29" r="24" stroke="rgba(72,202,228,.12)" stroke-width="5" fill="none"/>
+        <circle id="r-arc" cx="29" cy="29" r="24" stroke="#48CAE4" stroke-width="5" fill="none" stroke-dasharray="151" stroke-dashoffset="0" stroke-linecap="round"/>
       </svg>
       <div class="ring-n" id="r-n">60</div>
     </div>
@@ -1069,16 +1069,37 @@ function startRest(s){
     const elapsed=Math.floor((Date.now()-S._restStart)/1000);
     rLeft=Math.max(0,rTotal-elapsed);
     updRest();
-    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}
+    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();beepAndVibrate();skipRest();}
   },500);
 }
 function updRest(){
   ge('r-t').textContent=fRest(Math.max(0,rLeft));
   ge('r-n').textContent=Math.max(0,rLeft);
   const arc=ge('r-arc');
-  if(arc)arc.style.strokeDashoffset=(113*(1-Math.max(0,rLeft)/rTotal)).toFixed(1);
+  if(arc)arc.style.strokeDashoffset=(151*(1-Math.max(0,rLeft)/rTotal)).toFixed(1);
 }
-function skipRest(){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();ge('rest-bar').classList.remove('on');}
+function beepAndVibrate(){
+  // Vibration (works when silent on iPhone via Web Vibration API - limited support)
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,200]);
+  // Audio beep using Web Audio API (plays even in silent mode on some devices)
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,0.35,0.7].forEach(delay=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type='sine';osc.frequency.setValueAtTime(880,ctx.currentTime+delay);
+      gain.gain.setValueAtTime(0.4,ctx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.25);
+      osc.start(ctx.currentTime+delay);
+      osc.stop(ctx.currentTime+delay+0.25);
+    });
+  }catch(e){}
+}
+function skipRest(){
+  clearInterval(rInt);S._restStart=null;S._restTotal=0;save();
+  ge('rest-bar').classList.remove('on');
+}
 function chRest(d){
   rLeft=Math.max(5,rLeft+d);
   if(rLeft>rTotal)rTotal=rLeft;
@@ -1801,7 +1822,7 @@ document.addEventListener('visibilitychange',()=>{
     rLeft=Math.max(0,S._restTotal-elapsed);
     rTotal=S._restTotal;
     updRest();
-    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}
+    if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();beepAndVibrate();skipRest();}
   }
 });
 ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
@@ -1952,7 +1973,7 @@ if(S.cw){S.cw=null;save();}
 if(S._restStart&&S._restTotal){
   const elapsed=Math.floor((Date.now()-S._restStart)/1000);
   const remaining=S._restTotal-elapsed;
-  if(remaining>0){rTotal=S._restTotal;rLeft=remaining;ge('rest-bar').classList.add('on');updRest();rInt=setInterval(()=>{const e=Math.floor((Date.now()-S._restStart)/1000);rLeft=Math.max(0,rTotal-e);updRest();if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();skipRest();}},500);}
+  if(remaining>0){rTotal=S._restTotal;rLeft=remaining;ge('rest-bar').classList.add('on');updRest();rInt=setInterval(()=>{const e=Math.floor((Date.now()-S._restStart)/1000);rLeft=Math.max(0,rTotal-e);updRest();if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();beepAndVibrate();skipRest();}},500);}
   else{S._restStart=null;S._restTotal=0;save();}
 }
 renderHome();
