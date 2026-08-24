@@ -354,7 +354,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </div>
 
 <!-- CREATE EXERCISE MODAL -->
-<div id="m-create-exo" class="modal-ov ctr" style="display:none">
+<div id="m-create-exo" class="modal-ov ctr" style="display:none;z-index:250">
   <div class="modal rd">
     <div class="m-title">➕ Nouvel exercice</div>
     <div class="form-g">
@@ -398,7 +398,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     </div>
     <div style="display:flex;gap:.45rem;margin-top:.85rem">
       <button class="btn btn-ghost" style="flex:1" onclick="ge('m-create-exo').style.display='none'">Annuler</button>
-      <button class="btn btn-ice" style="flex:2" onclick="confirmCreateExo()">Créer l'exercice</button>
+      <button class="btn btn-ice" style="flex:2" id="btn-confirm-create-exo">Créer l'exercice</button>
     </div>
   </div>
 </div>
@@ -479,7 +479,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <div class="m-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
       <div class="m-title" style="margin:0">Choisir un exercice</div>
-      <button class="btn btn-ghost btn-xs" onclick="openCreateExo()">+ Créer</button>
+      <button class="btn btn-ghost btn-xs" id="btn-open-create-exo">+ Créer</button>
     </div>
     <div class="form-g"><input type="text" id="exo-search" placeholder="Rechercher..."></div>
     <div class="chip-scroll" id="muscle-chips"></div>
@@ -1770,6 +1770,13 @@ ge('btn-add-exo-r').addEventListener('click',addExoToRoutineModal);
 ge('btn-cancel-r').addEventListener('click',closeRModal);
 ge('btn-save-r').addEventListener('click',saveRoutine);
 ge('btn-cancel-exo').addEventListener('click',closeExoModal);
+ge('btn-open-create-exo').addEventListener('click',()=>{
+  ge('inp-create-name').value='';
+  ge('sel-create-muscle').value='Biceps';
+  ge('sel-create-equip').value='Barre';
+  ge('chk-create-bw').checked=false;
+  ge('m-create-exo').style.display='flex';
+});
 ge('btn-back-wo').addEventListener('click',()=>{
   ge('m-finish').style.display='none';
   // Restart timer
@@ -1798,6 +1805,7 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
+ge('btn-confirm-create-exo').addEventListener('click',confirmCreateExo);
 ge('btn-confirm-rename').addEventListener('click',confirmRename);
 ge('inp-rename').addEventListener('keydown',e=>{if(e.key==='Enter')confirmRename();});
 document.querySelectorAll('.ct[data-p]').forEach(b=>b.addEventListener('click',function(){
@@ -1919,7 +1927,7 @@ function confirmCreateExo(){
   S.customExercises.push(newExo);
   save();
   ge('m-create-exo').style.display='none';
-  // Re-filter in picker to show new exercise
+  // Reopen exo picker with new exercise visible
   filterExos();
   filterReplaceExos();
   showToast('✅ Exercice "'+name+'" créé !','var(--green)');
