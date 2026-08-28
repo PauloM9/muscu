@@ -968,8 +968,9 @@ function renderSets(ei,prW){
   const tbody=ge('sets-'+ei);if(!tbody)return;
   if(prW===undefined)prW=getPR(ex.id,'weight');
 
-  // Get previous session sets for this exercise
-  const prevSets=(ex._prev&&ex._prev.sets)?ex._prev.sets.filter(s=>s.done):[];
+  // Always get fresh last session data for this exercise (any routine)
+  const lastData=getLastSession(ex.id);
+  const prevSets=lastData?lastData.ex.sets.filter(s=>s.done):[];
 
   tbody.innerHTML='';
   ex.sets.forEach((s,si)=>{
