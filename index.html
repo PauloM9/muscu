@@ -344,6 +344,12 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <button class="ct" data-p="month">Mois</button>
       <button class="ct" data-p="year">Année</button>
     </div>
+    <!-- Week navigation (visible only in week mode) -->
+    <div id="week-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-prev">◀</button>
+      <div id="week-label" style="font-size:.8rem;font-weight:800;color:var(--ice2);text-align:center"></div>
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-next">▶</button>
+    </div>
     <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="100"></canvas></div>
     <div class="chart-box"><div class="chart-ttl">Répétitions</div><canvas id="c-reps" height="80"></canvas></div>
     <div class="chart-box"><div class="chart-ttl">Durée (min)</div><canvas id="c-dur" height="80"></canvas></div>
@@ -1622,19 +1628,38 @@ function closeDet(){ge('m-detail').style.display='none';}
 function getCD(p){
   const now=new Date();let labels=[],vd=[],rd=[],dd=[];
   if(p==='week'){
-    for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('fr-FR',{weekday:'short'}));
-      const ss=S.sessions.filter(s=>new Date(s.savedAt||s.start).toDateString()===d.toDateString());
+    // Calendar week: Mon-Sun with offset navigation
+    const days=getWeekDays(chartWeekOffset);
+    const dayNames=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    days.forEach((d,i)=>{
+      labels.push(dayNames[i]);
+      const dayStr=d.toDateString();
+      const ss=S.sessions.filter(s=>new Date(s.savedAt||s.start).toDateString()===dayStr);
       vd.push(ss.reduce((a,s)=>a+(s.volume||calcVol(s)),0));
       rd.push(ss.reduce((a,s)=>a+(s.totalReps||calcReps(s)),0));
-      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));}
+      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));
+    });
   } else if(p==='month'){
-    for(let i=4;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i*7);const ws=new Date(d);ws.setDate(ws.getDate()-6);
-      labels.push('S-'+i);
-      const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t>=ws&&t<=d;});
+    // Weeks of the current month (Mon-Sun)
+    const now2=new Date();
+    const y=now2.getFullYear(),m=now2.getMonth();
+    const firstDay=new Date(y,m,1);
+    const lastDay=new Date(y,m+1,0);
+    // Find first Monday of or before month start
+    let mon=getMonday(firstDay);
+    let wi=0;
+    while(mon<=lastDay&&wi<6){
+      const sun=getSunday(mon);
+      const weekLabel='S'+(wi+1);
+      labels.push(weekLabel);
+      const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t>=mon&&t<=sun;});
       vd.push(ss.reduce((a,s)=>a+(s.volume||calcVol(s)),0));
       rd.push(ss.reduce((a,s)=>a+(s.totalReps||calcReps(s)),0));
-      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));}
+      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));
+      mon=new Date(mon);mon.setDate(mon.getDate()+7);wi++;
+    }
   } else {
+    // Year: by month
     for(let i=11;i>=0;i--){const d=new Date(now);d.setMonth(d.getMonth()-i);
       labels.push(d.toLocaleDateString('fr-FR',{month:'short'}));
       const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t.getMonth()===d.getMonth()&&t.getFullYear()===d.getFullYear();});
@@ -1661,6 +1686,43 @@ function mkChart(id,data,color,type='bar'){
   charts[id]=new Chart(cv,{type,data:{labels:data.labels,datasets:[{data:data.d,backgroundColor:color+'28',borderColor:color,borderWidth:2,borderRadius:5,fill:type==='line',tension:.4,pointBackgroundColor:color,pointRadius:3}]},options:opts});
 }
 let radarP='week';
+let chartWeekOffset=0; // 0=current week, -1=last week, etc.
+
+function getMonday(d){
+  // Get the Monday of the week containing date d
+  const day=d.getDay(); // 0=Sun,1=Mon,...6=Sat
+  const diff=day===0?-6:1-day; // adjust to Monday
+  const mon=new Date(d);
+  mon.setDate(d.getDate()+diff);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+function getSunday(mon){
+  const sun=new Date(mon);
+  sun.setDate(mon.getDate()+6);
+  sun.setHours(23,59,59,999);
+  return sun;
+}
+function getWeekDays(offset){
+  // Returns array of 7 Date objects Mon->Sun for given week offset from current
+  const now=new Date();
+  const mon=getMonday(now);
+  mon.setDate(mon.getDate()+offset*7);
+  return Array.from({length:7},(_,i)=>{
+    const d=new Date(mon);d.setDate(mon.getDate()+i);return d;
+  });
+}
+function updateWeekNav(){
+  const days=getWeekDays(chartWeekOffset);
+  const mon=days[0],sun=days[6];
+  const fmtShort=d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  const label=fmtShort(mon)+' – '+fmtShort(sun);
+  const weekEl=document.getElementById('week-label');
+  if(weekEl)weekEl.textContent=chartWeekOffset===0?'Cette semaine ('+label+')':chartWeekOffset===-1?'Semaine dernière ('+label+')':label;
+  const nextBtn=document.getElementById('btn-week-next');
+  if(nextBtn)nextBtn.style.opacity=chartWeekOffset>=0?'.3':'1';
+  if(nextBtn)nextBtn.style.pointerEvents=chartWeekOffset>=0?'none':'auto';
+}
 
 function getMuscleSets(period){
   const groups={
@@ -1741,6 +1803,10 @@ function renderCharts(){
   mkChart('c-vol',{labels:d.labels,d:d.vd},'#48CAE4');
   mkChart('c-reps',{labels:d.labels,d:d.rd},'#00F5A0','bar');
   mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','bar');
+  // Show/hide week nav
+  const wn=document.getElementById('week-nav');
+  if(wn)wn.style.display=chartP==='week'?'flex':'none';
+  if(chartP==='week')updateWeekNav();
 }
 
 let _renameCb=null;
@@ -1816,6 +1882,8 @@ ge('replace-search').addEventListener('input',filterReplaceExos);
 ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar();});
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
+document.getElementById('btn-week-prev').addEventListener('click',()=>{chartWeekOffset--;renderCharts();});
+document.getElementById('btn-week-next').addEventListener('click',()=>{if(chartWeekOffset<0){chartWeekOffset++;renderCharts();}});
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&S._restStart&&S._restTotal){
     const elapsed=Math.floor((Date.now()-S._restStart)/1000);
