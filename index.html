@@ -257,15 +257,15 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <nav>
   <div class="logo">Road to Super Sayan 🔥</div>
   <div class="nav-tabs">
-    <button class="ntb act" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
+    <button class="ntb act" data-tab="history"><div class="ico">📊</div>Stats</button>
     <button class="ntb" data-tab="routines"><div class="ico">📋</div>Routines</button>
-    <button class="ntb" data-tab="history"><div class="ico">📊</div>Stats</button>
+    <button class="ntb" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
   </div>
 </nav>
 
 <div id="app">
 <!-- WORKOUT -->
-<div id="tab-workout" class="section act">
+<div id="tab-workout" class="section">
   <div id="v-home">
     <div class="inner">
       <div class="sec-head"><div class="sec-title">Bonne séance 💪</div></div>
@@ -309,7 +309,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </div>
 
 <!-- HISTORY -->
-<div id="tab-history" class="section">
+<div id="tab-history" class="section act">
   <div class="inner">
     <div class="sec-head">
       <div class="sec-title">Statistiques</div>
@@ -345,10 +345,22 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <button class="ct" data-p="year">Année</button>
     </div>
     <!-- Week navigation (visible only in week mode) -->
-    <div id="week-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
+    <div id="week-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
       <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-prev">◀</button>
       <div id="week-label" style="font-size:.8rem;font-weight:800;color:var(--ice2);text-align:center"></div>
       <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-next">▶</button>
+    </div>
+    <!-- Month navigation -->
+    <div id="month-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-month-prev">◀</button>
+      <div id="month-label" style="font-size:.85rem;font-weight:800;color:var(--ice2);text-align:center"></div>
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-month-next">▶</button>
+    </div>
+    <!-- Year navigation -->
+    <div id="year-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-year-prev">◀</button>
+      <div id="year-label" style="font-size:.9rem;font-weight:900;color:var(--ice2);text-align:center"></div>
+      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-year-next">▶</button>
     </div>
     <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="100"></canvas></div>
     <div class="chart-box"><div class="chart-ttl">Répétitions</div><canvas id="c-reps" height="80"></canvas></div>
@@ -756,6 +768,7 @@ document.querySelectorAll('.ntb').forEach(b=>b.addEventListener('click',function
   if(this.dataset.tab==='routines')renderRoutines();
   if(this.dataset.tab==='history'){renderHistory();renderCalendar();renderCharts();}
   if(this.dataset.tab==='workout')renderHome();
+renderHistory();renderCalendar();renderCharts();
 
 // Calendar drag setup (one-time, not re-added on each render)
 (function setupCalDrag(){
@@ -1641,18 +1654,16 @@ function getCD(p){
       dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));
     });
   } else if(p==='month'){
-    // Weeks of the current month (Mon-Sun)
-    const now2=new Date();
-    const y=now2.getFullYear(),m=now2.getMonth();
+    // Weeks S1-S4 of target month (navigable)
+    const targetDate=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
+    const y=targetDate.getFullYear(),m=targetDate.getMonth();
     const firstDay=new Date(y,m,1);
     const lastDay=new Date(y,m+1,0);
-    // Find first Monday of or before month start
     let mon=getMonday(firstDay);
     let wi=0;
-    while(mon<=lastDay&&wi<6){
+    while(mon<=lastDay&&wi<5){
       const sun=getSunday(mon);
-      const weekLabel='S'+(wi+1);
-      labels.push(weekLabel);
+      labels.push('S'+(wi+1));
       const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t>=mon&&t<=sun;});
       vd.push(ss.reduce((a,s)=>a+(s.volume||calcVol(s)),0));
       rd.push(ss.reduce((a,s)=>a+(s.totalReps||calcReps(s)),0));
@@ -1660,13 +1671,16 @@ function getCD(p){
       mon=new Date(mon);mon.setDate(mon.getDate()+7);wi++;
     }
   } else {
-    // Year: by month
-    for(let i=11;i>=0;i--){const d=new Date(now);d.setMonth(d.getMonth()-i);
-      labels.push(d.toLocaleDateString('fr-FR',{month:'short'}));
-      const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t.getMonth()===d.getMonth()&&t.getFullYear()===d.getFullYear();});
+    // Year: all 12 months of the target year
+    const targetYear=new Date().getFullYear()+chartYearOffset;
+    const monthNames=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+    for(let m=0;m<12;m++){
+      labels.push(monthNames[m]);
+      const ss=S.sessions.filter(s=>{const t=new Date(s.savedAt||s.start);return t.getMonth()===m&&t.getFullYear()===targetYear;});
       vd.push(ss.reduce((a,s)=>a+(s.volume||calcVol(s)),0));
       rd.push(ss.reduce((a,s)=>a+(s.totalReps||calcReps(s)),0));
-      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));}
+      dd.push(ss.reduce((a,s)=>a+Math.round((s.duration||0)/60000),0));
+    }
   }
   return{labels,vd,rd,dd};
 }
@@ -1688,6 +1702,8 @@ function mkChart(id,data,color,type='bar'){
 }
 let radarP='week';
 let chartWeekOffset=0; // 0=current week, -1=last week, etc.
+let chartYearOffset=0; // 0=current year, -1=last year, etc.
+let chartMonthOffset=0; // 0=current month, -1=last month, etc.
 
 function getMonday(d){
   // Get the Monday of the week containing date d
@@ -1726,17 +1742,14 @@ function updateWeekNav(){
 }
 
 function getMuscleSets(period){
-  const groups={
-    'Pectoraux':0,'Dos':0,'Épaules':0,
-    'Biceps':0,'Triceps':0,'Jambes':0,'Abdominaux':0
-  };
+  const groups={'Pectoraux':0,'Dos':0,'Épaules':0,'Biceps':0,'Triceps':0};
   const now=new Date();
+  const days=period==='week'?getWeekDays(chartWeekOffset):null;
   S.sessions.forEach(s=>{
     const t=new Date(s.savedAt||s.start);
     let include=false;
     if(period==='week'){
-      const diff=(now-t)/(1000*60*60*24);
-      include=diff<=7;
+      include=days?days.some(d=>d.toDateString()===t.toDateString()):false;
     } else if(period==='month'){
       include=t.getMonth()===now.getMonth()&&t.getFullYear()===now.getFullYear();
     } else {
@@ -1744,10 +1757,9 @@ function getMuscleSets(period){
     }
     if(!include)return;
     (s.exercises||[]).forEach(ex=>{
-      const m=ex.m||exoDef(ex.id).m||'';
+      const m=(S.customMuscles&&S.customMuscles[ex.id])||ex.m||exoDef(ex.id).m||'';
       const done=ex.sets.filter(st=>st.done).length;
-      if(m==='Quadriceps'||m==='Ischios'||m==='Fessiers'||m==='Mollets')groups['Jambes']+=done;
-      else if(groups[m]!==undefined)groups[m]+=done;
+      if(groups[m]!==undefined)groups[m]+=done;
     });
   });
   return groups;
@@ -1808,6 +1820,26 @@ function renderCharts(){
   const wn=document.getElementById('week-nav');
   if(wn)wn.style.display=chartP==='week'?'flex':'none';
   if(chartP==='week')updateWeekNav();
+  // Month nav
+  const mn=document.getElementById('month-nav');
+  if(mn)mn.style.display=chartP==='month'?'flex':'none';
+  if(chartP==='month'){
+    const targetDate=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
+    const ml=document.getElementById('month-label');
+    if(ml)ml.textContent=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    const mnxt=document.getElementById('btn-month-next');
+    if(mnxt){mnxt.style.opacity=chartMonthOffset>=0?'.3':'1';mnxt.style.pointerEvents=chartMonthOffset>=0?'none':'auto';}
+  }
+  // Year nav
+  const yn=document.getElementById('year-nav');
+  if(yn)yn.style.display=chartP==='year'?'flex':'none';
+  if(chartP==='year'){
+    const now2=new Date();
+    const yl=document.getElementById('year-label');
+    if(yl)yl.textContent=String(now2.getFullYear()+chartYearOffset);
+    const ynb=document.getElementById('btn-year-next');
+    if(ynb){ynb.style.opacity=chartYearOffset>=0?'.3':'1';ynb.style.pointerEvents=chartYearOffset>=0?'none':'auto';}
+  }
 }
 
 let _renameCb=null;
@@ -1885,6 +1917,10 @@ ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
 document.getElementById('btn-week-prev').addEventListener('click',()=>{chartWeekOffset--;renderCharts();});
 document.getElementById('btn-week-next').addEventListener('click',()=>{if(chartWeekOffset<0){chartWeekOffset++;renderCharts();}});
+document.getElementById('btn-month-prev').addEventListener('click',()=>{chartMonthOffset--;renderCharts();});
+document.getElementById('btn-month-next').addEventListener('click',()=>{if(chartMonthOffset<0){chartMonthOffset++;renderCharts();}});
+document.getElementById('btn-year-prev').addEventListener('click',()=>{chartYearOffset--;renderCharts();});
+document.getElementById('btn-year-next').addEventListener('click',()=>{if(chartYearOffset<0){chartYearOffset++;renderCharts();}});
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&S._restStart&&S._restTotal){
     const elapsed=Math.floor((Date.now()-S._restStart)/1000);
