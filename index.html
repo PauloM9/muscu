@@ -385,39 +385,25 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <div class="cal-grid" id="cal-days"></div>
     </div>
     <!-- Charts -->
-    <div class="chart-box" style="margin-bottom:.8rem">
-      <div class="chart-ttl">Répartition musculaire 🎯</div>
-      <div class="chart-tabs" style="margin-bottom:.6rem">
-        <button class="ct act" data-p2="week">Semaine</button>
-        <button class="ct" data-p2="month">Mois</button>
-        <button class="ct" data-p2="all">Total</button>
+    <!-- Unified period selector + navigation -->
+    <div style="margin-bottom:.7rem">
+      <div class="chart-tabs" style="margin-bottom:.5rem">
+        <button class="ct act" data-p="week">Semaine</button>
+        <button class="ct" data-p="month">Mois</button>
+        <button class="ct" data-p="year">Année</button>
       </div>
-      <canvas id="c-radar" height="220"></canvas>
+      <!-- Period nav bar -->
+      <div id="period-nav" style="display:flex;align-items:center;justify-content:space-between;background:rgba(12,24,36,.8);border:1px solid var(--border);border-radius:12px;padding:.45rem .85rem">
+        <button class="btn-icon" style="font-size:1.2rem" id="btn-period-prev">◀</button>
+        <div id="period-label" style="font-size:.88rem;font-weight:900;color:var(--ice2);text-align:center;flex:1"></div>
+        <button class="btn-icon" style="font-size:1.2rem" id="btn-period-next">▶</button>
+      </div>
     </div>
-    <div class="chart-tabs">
-      <button class="ct act" data-p="week">Semaine</button>
-      <button class="ct" data-p="month">Mois</button>
-      <button class="ct" data-p="year">Année</button>
+    <div class="chart-box" style="margin-bottom:.6rem">
+      <div class="chart-ttl">Répartition musculaire 🎯</div>
+      <canvas id="c-radar" height="200"></canvas>
     </div>
-    <!-- Week navigation (visible only in week mode) -->
-    <div id="week-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-prev">◀</button>
-      <div id="week-label" style="font-size:.8rem;font-weight:800;color:var(--ice2);text-align:center"></div>
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-week-next">▶</button>
-    </div>
-    <!-- Month navigation -->
-    <div id="month-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-month-prev">◀</button>
-      <div id="month-label" style="font-size:.85rem;font-weight:800;color:var(--ice2);text-align:center"></div>
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-month-next">▶</button>
-    </div>
-    <!-- Year navigation -->
-    <div id="year-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:.6rem;background:rgba(12,24,36,.7);border-radius:11px;padding:.4rem .7rem">
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-year-prev">◀</button>
-      <div id="year-label" style="font-size:.9rem;font-weight:900;color:var(--ice2);text-align:center"></div>
-      <button class="btn-icon" style="font-size:1.1rem;padding:.2rem .4rem" id="btn-year-next">▶</button>
-    </div>
-    <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="100"></canvas></div>
+    <div class="chart-box"><div class="chart-ttl">Volume (kg)</div><canvas id="c-vol" height="90"></canvas></div>
     <div class="chart-box"><div class="chart-ttl">Répétitions</div><canvas id="c-reps" height="80"></canvas></div>
     <div class="chart-box"><div class="chart-ttl">Durée (min)</div><canvas id="c-dur" height="80"></canvas></div>
     <div style="font-size:.68rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:.5rem">Séances enregistrées</div>
@@ -1855,8 +1841,7 @@ function mkChart(id,data,color,type='bar'){
   }};
   charts[id]=new Chart(cv,{type,data:{labels:data.labels,datasets:[{data:data.d,backgroundColor:color+'28',borderColor:color,borderWidth:2,borderRadius:5,fill:type==='line',tension:.4,pointBackgroundColor:color,pointRadius:3}]},options:opts});
 }
-let radarP='week';
-let chartWeekOffset=0; // 0=current week, -1=last week, etc.
+let chartWeekOffset=0;
 let chartYearOffset=0; // 0=current year, -1=last year, etc.
 let chartMonthOffset=0; // 0=current month, -1=last month, etc.
 
@@ -1925,7 +1910,7 @@ function getMuscleSets(period){
 function renderRadar(){
   const cv=ge('c-radar');if(!cv)return;
   if(charts['radar'])charts['radar'].destroy();
-  const g=getMuscleSets(radarP);
+  const g=getMuscleSets(chartP);
   const labels=Object.keys(g);
   const data=Object.values(g);
   const maxVal=Math.max(...data,1);
@@ -1967,36 +1952,33 @@ function renderRadar(){
   });
 }
 
+function updatePeriodLabel(){
+  const now=new Date();
+  const lbl=ge('period-label');
+  const nextBtn=ge('btn-period-next');
+  if(!lbl)return;
+  if(chartP==='week'){
+    const days=getWeekDays(chartWeekOffset);
+    const fmt=d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    lbl.textContent=fmt(days[0])+' – '+fmt(days[6]);
+    if(nextBtn){nextBtn.style.opacity=chartWeekOffset>=0?'.3':'1';nextBtn.style.pointerEvents=chartWeekOffset>=0?'none':'auto';}
+  } else if(chartP==='month'){
+    const d=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
+    const s=d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+    lbl.textContent=s.charAt(0).toUpperCase()+s.slice(1);
+    if(nextBtn){nextBtn.style.opacity=chartMonthOffset>=0?'.3':'1';nextBtn.style.pointerEvents=chartMonthOffset>=0?'none':'auto';}
+  } else {
+    lbl.textContent=String(now.getFullYear()+chartYearOffset);
+    if(nextBtn){nextBtn.style.opacity=chartYearOffset>=0?'.3':'1';nextBtn.style.pointerEvents=chartYearOffset>=0?'none':'auto';}
+  }
+}
 function renderCharts(){
+  updatePeriodLabel();
   renderRadar();
   const d=getCD(chartP);
   mkChart('c-vol',{labels:d.labels,d:d.vd},'#48CAE4');
   mkChart('c-reps',{labels:d.labels,d:d.rd},'#00F5A0','bar');
   mkChart('c-dur',{labels:d.labels,d:d.dd},'#FFB347','bar');
-  // Show/hide week nav
-  const wn=document.getElementById('week-nav');
-  if(wn)wn.style.display=chartP==='week'?'flex':'none';
-  if(chartP==='week')updateWeekNav();
-  // Month nav
-  const mn=document.getElementById('month-nav');
-  if(mn)mn.style.display=chartP==='month'?'flex':'none';
-  if(chartP==='month'){
-    const targetDate=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
-    const ml=document.getElementById('month-label');
-    if(ml){const s=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});ml.textContent=s.charAt(0).toUpperCase()+s.slice(1);}
-        const mnxt=document.getElementById('btn-month-next');
-    if(mnxt){mnxt.style.opacity=chartMonthOffset>=0?'.3':'1';mnxt.style.pointerEvents=chartMonthOffset>=0?'none':'auto';}
-  }
-  // Year nav
-  const yn=document.getElementById('year-nav');
-  if(yn)yn.style.display=chartP==='year'?'flex':'none';
-  if(chartP==='year'){
-    const now2=new Date();
-    const yl=document.getElementById('year-label');
-    if(yl)yl.textContent=String(now2.getFullYear()+chartYearOffset);
-    const ynb=document.getElementById('btn-year-next');
-    if(ynb){ynb.style.opacity=chartYearOffset>=0?'.3':'1';ynb.style.pointerEvents=chartYearOffset>=0?'none':'auto';}
-  }
 }
 
 let _renameCb=null;
@@ -2088,12 +2070,18 @@ ge('btn-resume-circuit').addEventListener('click',resumeCircuit);
 ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar();});
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
-document.getElementById('btn-week-prev').addEventListener('click',()=>{chartWeekOffset--;renderCharts();});
-document.getElementById('btn-week-next').addEventListener('click',()=>{if(chartWeekOffset<0){chartWeekOffset++;renderCharts();}});
-document.getElementById('btn-month-prev').addEventListener('click',()=>{chartMonthOffset--;renderCharts();});
-document.getElementById('btn-month-next').addEventListener('click',()=>{if(chartMonthOffset<0){chartMonthOffset++;renderCharts();}});
-document.getElementById('btn-year-prev').addEventListener('click',()=>{chartYearOffset--;renderCharts();});
-document.getElementById('btn-year-next').addEventListener('click',()=>{if(chartYearOffset<0){chartYearOffset++;renderCharts();}});
+
+ge('btn-period-prev').addEventListener('click',()=>{
+  if(chartP==='week')chartWeekOffset--;
+  else if(chartP==='month')chartMonthOffset--;
+  else chartYearOffset--;
+  renderCharts();
+});
+ge('btn-period-next').addEventListener('click',()=>{
+  if(chartP==='week'){if(chartWeekOffset<0){chartWeekOffset++;renderCharts();}}
+  else if(chartP==='month'){if(chartMonthOffset<0){chartMonthOffset++;renderCharts();}}
+  else{if(chartYearOffset<0){chartYearOffset++;renderCharts();}}
+});
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&S._restStart&&S._restTotal){
     const elapsed=Math.floor((Date.now()-S._restStart)/1000);
@@ -2110,10 +2098,6 @@ ge('inp-rename').addEventListener('keydown',e=>{if(e.key==='Enter')confirmRename
 document.querySelectorAll('.ct[data-p]').forEach(b=>b.addEventListener('click',function(){
   document.querySelectorAll('.ct[data-p]').forEach(x=>x.classList.remove('act'));
   this.classList.add('act');chartP=this.dataset.p;renderCharts();
-}));
-document.querySelectorAll('.ct[data-p2]').forEach(b=>b.addEventListener('click',function(){
-  document.querySelectorAll('.ct[data-p2]').forEach(x=>x.classList.remove('act'));
-  this.classList.add('act');radarP=this.dataset.p2;renderRadar();
 }));
 
 // Event delegation for exercise name editing
