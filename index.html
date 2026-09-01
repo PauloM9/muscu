@@ -23,7 +23,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     radial-gradient(ellipse 50% 60% at 20% 85%,rgba(0,119,182,.08) 0%,transparent 100%);}
 
 /* NAV */
-nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
+nav{height:var(--nav);flex-shrink:0;position:relative;z-index:100;
   background:rgba(7,16,26,.97);backdrop-filter:blur(24px);
   border-bottom:1px solid rgba(72,202,228,.1);
   display:flex;align-items:center;justify-content:space-between;
@@ -32,7 +32,7 @@ nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
 .nav-tabs{display:flex;gap:.1rem}
 .ntb{background:none;border:none;color:var(--t3);font-size:.58rem;font-weight:700;
   padding:.35rem .38rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;gap:.08rem;transition:all .18s;text-transform:uppercase;letter-spacing:.15px}
+  align-items:center;gap:.08rem;transition:all .18s;text-transform:uppercase;letter-spacing:.15px;position:relative;z-index:101}
 .ntb .ico{font-size:.95rem;line-height:1}
 .ntb.act{color:var(--ice);background:rgba(72,202,228,.1);box-shadow:inset 0 0 0 1px rgba(72,202,228,.2)}
 
@@ -605,7 +605,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     </div>
     <div class="form-g">
       <label>Exercices</label>
-      <div id="circ-exo-list"></div>
+      <div id="circ-create-exo-list"></div>
       <button class="btn btn-xs" style="width:100%;margin-top:.4rem;background:rgba(255,107,107,.1);color:#FF6B6B;border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:.45rem;font-weight:800" onclick="addExoToCircuit()">+ Ajouter exercice</button>
     </div>
     <div style="display:flex;gap:.45rem;margin-top:.85rem">
@@ -619,7 +619,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <div id="m-finish-circuit" class="modal-ov ctr" style="display:none">
   <div class="modal rd">
     <div class="m-title">⚡ Circuit terminé !</div>
-    <div id="fin-stats" class="stats-row s2"></div>
+    <div id="fin-stats-circuit" class="stats-row s2"></div>
     <div class="form-g" style="margin-top:.5rem">
       <label>Note (optionnel)</label>
       <textarea id="inp-note-circuit" rows="2" style="resize:none;margin-top:.25rem" placeholder="Ressenti..."></textarea>
@@ -870,7 +870,7 @@ document.querySelectorAll('.ntb').forEach(b=>b.addEventListener('click',function
   ge('tab-'+this.dataset.tab).classList.add('act');
   if(this.dataset.tab==='routines')renderRoutines();
   if(this.dataset.tab==='history'){renderHistory();renderCalendar();renderCharts();}
-  if(this.dataset.tab==='workout')renderHome();
+  if(this.dataset.tab==='workout')try{renderHome();}catch(e){document.body.innerHTML='<div style="padding:2rem;color:red;font-family:monospace;font-size:.85rem">Erreur: '+e.message+'</div>';}
 // Restore circuit if active
 if(S.cw_circuit){
   circStart2=S.cw_circuit.start;circPausedTotal=S.cw_circuit.pausedMs||0;
@@ -2229,7 +2229,7 @@ function delCircuit(i){if(confirm('Supprimer ce circuit ?')){S.circuits.splice(i
 function editCircuit(i){openCircuitModal(i);}
 
 function renderCircExos(){
-  const c=ge('circ-exo-list');
+  const c=ge('circ-create-exo-list');
   if(!tmpCircExos.length){c.innerHTML='<div style="color:var(--t3);font-size:.8rem;font-weight:600;padding:.3rem 0">Aucun exercice</div>';return;}
   c.innerHTML='';
   tmpCircExos.forEach((ex,i)=>{
@@ -2541,7 +2541,7 @@ function endCircuit(){
   w.volume=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).reduce((b,s)=>b+((s.weight||0)*(s.reps||0)),0),0);
   w.totalSets=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).length,0);
   w.totalReps=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).reduce((b,s)=>b+(s.reps||0),0),0);
-  ge('fin-stats').innerHTML=`
+  ge('fin-stats-circuit').innerHTML=`
     <div class="stat-box"><div class="sv">${fDur(w.duration)}</div><div class="sl">Durée</div></div>
     <div class="stat-box"><div class="sv">${w.totalSets}</div><div class="sl">Séries</div></div>
     <div class="stat-box"><div class="sv">${fKg(w.volume)}</div><div class="sl">Volume</div></div>
@@ -2647,7 +2647,7 @@ function showToast(msg,color){
   if(!t){t=document.createElement('div');t.id='toast-msg';
     t.style.cssText='position:fixed;bottom:calc(var(--nav)+12px);left:50%;transform:translateX(-50%);'+
       'padding:.55rem 1.1rem;border-radius:12px;font-size:.85rem;font-weight:700;'+
-      'z-index:999;white-space:nowrap;transition:opacity .3s;backdrop-filter:blur(12px)';
+      'z-index:999;white-space:nowrap;transition:opacity .3s;backdrop-filter:blur(12px);pointer-events:none';
     document.body.appendChild(t);}
   t.textContent=msg;
   t.style.background=color==='var(--green)'?'rgba(0,245,160,.15)':'rgba(255,107,107,.15)';
