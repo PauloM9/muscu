@@ -295,7 +295,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <button class="btn btn-ghost" style="width:100%;margin-top:.35rem" id="btn-free">+ Séance libre</button>
     </div>
   </div>
-  <div id="v-active" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+  <div id="v-active" style="display:none">
     <div class="topbar">
       <div>
         <div style="font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Durée</div>
@@ -330,7 +330,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     </div>
   </div>
   <!-- ACTIVE CIRCUIT VIEW -->
-  <div id="circ-v-active" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+  <div id="circ-v-active" style="display:none">
     <div class="topbar" style="border-top:2px solid #FF6B6B">
       <div>
         <div style="font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Circuit</div>
@@ -982,10 +982,8 @@ function startFree(){
 }
 function showActive(){
   ge('v-home').style.display='none';
-  ge('v-active').style.display='flex';
-  ge('v-active').style.flexDirection='column';
-  ge('v-active').style.height='100%';
-  ge('v-active').style.overflow='hidden';
+  const va=ge('v-active');
+  va.style.cssText='display:flex;flex-direction:column;height:100%;overflow:hidden';
   ge('w-name').textContent=S.cw.name;
   wPaused=false;ge('btn-pause').textContent='⏸';
   renderActive();
@@ -1275,7 +1273,7 @@ function saveWO(){
 function discardWO(){
   if(!confirm('Abandonner sans enregistrer ?'))return;
   S.cw=null;clearInterval(wInt);save();skipRest();
-  ge('m-finish').style.display='none';ge('v-active').style.display='none';ge('v-home').style.display='block';renderHome();
+  ge('m-finish').style.display='none';ge('v-active').style.cssText='display:none';ge('v-home').style.display='block';renderHome();
 }
 
 // ── ADD EXO TO ACTIVE ──
@@ -2409,7 +2407,8 @@ function startCircTimer(){
 
 function showCircActive(){
   ge('circ-v-home').style.display='none';
-  ge('circ-v-active').style.display='flex';
+  const ca=ge('circ-v-active');
+  ca.style.cssText='display:flex;flex-direction:column;height:100%;overflow:hidden';
   ge('circ-title').textContent=S.cw_circuit.name;
   renderCircActive();
 }
