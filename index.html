@@ -38,9 +38,9 @@ nav{height:var(--nav);flex-shrink:0;position:relative;z-index:100;
 
 /* SCROLL */
 #app{flex:1;overflow:hidden;position:relative;z-index:1}
-.section{display:none;height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.section{display:none;flex:1;overflow:hidden}
 .section::-webkit-scrollbar{display:none}
-.section.act{display:block!important}
+.section.act{display:flex!important;flex-direction:column;overflow:hidden}
 .inner{padding:.8rem .85rem 5rem}
 
 /* BUTTONS */
@@ -286,7 +286,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <div id="app">
 <!-- WORKOUT -->
 <div id="tab-workout" class="section act">
-  <div id="v-home">
+  <div id="v-home" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
     <div class="inner">
       <div class="sec-head"><div class="sec-title">Bonne séance 💪</div></div>
       <div id="home-stats"></div>
@@ -320,7 +320,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <!-- CIRCUIT / CARDIO / HIIT -->
 <div id="tab-circuit" class="section">
   <!-- HOME VIEW -->
-  <div id="circ-v-home">
+  <div id="circ-v-home" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
     <div class="inner">
       <div class="sec-head">
         <div class="sec-title">⚡ Circuits & Cardio</div>
@@ -1469,6 +1469,38 @@ function filterExos(){
       <div class="ep-desc">${e.d}</div>
     </div>
   </div>`).join('');
+  const listEl2=ge('exo-list');
+  if(!listEl2)return;
+  listEl2.innerHTML='';
+  list.forEach(e=>{
+    const isCustom=(S.customExercises||[]).some(x=>x.id===e.id);
+    const div=document.createElement('div');
+    div.className='ep-item';
+    div.style.position='relative';
+    div.innerHTML='<div style="flex:1;min-width:0"><div class="ep-nm">'+e.n+'</div>'
+      +'<div style="display:flex;gap:.25rem;margin:.15rem 0;flex-wrap:wrap">'
+      +'<span class="tag t-blue">'+e.m+'</span>'
+      +'<span class="tag '+(e.bw?'t-ice':'t-orange')+'">'+(e.bw?'Poids corps':e.e)+'</span>'
+      +(e.cats&&e.cats.length>1?e.cats.slice(1).map(c=>'<span class="tag t-ice">'+c+'</span>').join(''):'')
+      +'</div>'
+      +(e.d?'<div class="ep-desc">'+e.d+'</div>':'')
+      +'</div>'
+      +(isCustom?'<button class="btn-icon" style="color:var(--red);font-size:.85rem;flex-shrink:0" data-del-id="'+e.id+'">🗑️</button>':'');
+    // Click on item = pick (not on delete button)
+    div.addEventListener('click',function(ev){
+      if(ev.target.closest('[data-del-id]'))return;
+      pickEx(e.id);
+    });
+    // Delete button
+    const delBtn=div.querySelector('[data-del-id]');
+    if(delBtn)delBtn.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      if(!confirm('Supprimer "'+e.n+'" ?'))return;
+      S.customExercises=(S.customExercises||[]).filter(x=>x.id!==e.id);
+      save();filterExos();
+    });
+    listEl2.appendChild(div);
+  });
 }
 function pickEx(id){
   const all=[...EX,...(S.customExercises||[])];
@@ -2729,38 +2761,6 @@ if(S._restStart&&S._restTotal){
 }
 renderHome();
 
-const listEl2=ge('exo-list');
-  if(!listEl2)return;
-  listEl2.innerHTML='';
-  list.forEach(e=>{
-    const isCustom=(S.customExercises||[]).some(x=>x.id===e.id);
-    const div=document.createElement('div');
-    div.className='ep-item';
-    div.style.position='relative';
-    div.innerHTML='<div style="flex:1;min-width:0"><div class="ep-nm">'+e.n+'</div>'
-      +'<div style="display:flex;gap:.25rem;margin:.15rem 0;flex-wrap:wrap">'
-      +'<span class="tag t-blue">'+e.m+'</span>'
-      +'<span class="tag '+(e.bw?'t-ice':'t-orange')+'">'+(e.bw?'Poids corps':e.e)+'</span>'
-      +(e.cats&&e.cats.length>1?e.cats.slice(1).map(c=>'<span class="tag t-ice">'+c+'</span>').join(''):'')
-      +'</div>'
-      +(e.d?'<div class="ep-desc">'+e.d+'</div>':'')
-      +'</div>'
-      +(isCustom?'<button class="btn-icon" style="color:var(--red);font-size:.85rem;flex-shrink:0" data-del-id="'+e.id+'">🗑️</button>':'');
-    // Click on item = pick (not on delete button)
-    div.addEventListener('click',function(ev){
-      if(ev.target.closest('[data-del-id]'))return;
-      pickEx(e.id);
-    });
-    // Delete button
-    const delBtn=div.querySelector('[data-del-id]');
-    if(delBtn)delBtn.addEventListener('click',function(ev){
-      ev.stopPropagation();
-      if(!confirm('Supprimer "'+e.n+'" ?'))return;
-      S.customExercises=(S.customExercises||[]).filter(x=>x.id!==e.id);
-      save();filterExos();
-    });
-    listEl2.appendChild(div);
-  });
 </script>
 </body>
 </html>
