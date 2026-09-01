@@ -27,12 +27,12 @@ nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
   background:rgba(7,16,26,.97);backdrop-filter:blur(24px);
   border-bottom:1px solid rgba(72,202,228,.1);
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 .3rem 0 .6rem}
-.logo{font-weight:900;font-size:.75rem;color:var(--text);white-space:nowrap;letter-spacing:.1px}
+  padding:0 .55rem 0 .7rem}
+.logo{font-weight:900;font-size:.88rem;color:var(--text);white-space:nowrap;letter-spacing:.1px}
 .nav-tabs{display:flex;gap:.1rem}
-.ntb{background:none;border:none;color:var(--t3);font-size:.58rem;font-weight:700;
-  padding:.35rem .38rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;gap:.08rem;transition:all .18s;text-transform:uppercase;letter-spacing:.15px}
+.ntb{background:none;border:none;color:var(--t3);font-size:.65rem;font-weight:700;
+  padding:.38rem .52rem;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:.1rem;transition:all .18s;text-transform:uppercase;letter-spacing:.2px}
 .ntb .ico{font-size:.95rem;line-height:1}
 .ntb.act{color:var(--ice);background:rgba(72,202,228,.1);box-shadow:inset 0 0 0 1px rgba(72,202,228,.2)}
 
@@ -250,25 +250,6 @@ select option{background:var(--card2)}
 hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .su{animation:slideUp .2s ease}
-
-/* CIRCUIT */
-.circ-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.85rem 1rem;margin-bottom:.55rem;position:relative;overflow:hidden}
-.circ-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#FF6B6B,#FFB347)}
-.circ-name{font-weight:900;font-size:.97rem;margin-bottom:.2rem}
-.circ-meta{font-size:.72rem;color:var(--t3);font-weight:600}
-.circ-exo-block{background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:.6rem;overflow:hidden}
-.circ-exo-head{display:flex;align-items:center;padding:.65rem .85rem;gap:.55rem}
-.circ-exo-nm{font-weight:800;font-size:.9rem;line-height:1.25;word-break:break-word}
-.circ-exo-tags{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem}
-.circ-exo-body{padding:0 .75rem .75rem}
-.circ-timer-ring{position:relative;width:80px;height:80px;flex-shrink:0}
-.circ-timer-ring svg{transform:rotate(-90deg)}
-.circ-ring-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:900;color:#FF6B6B;font-variant-numeric:tabular-nums}
-.work-active .circ-timer-ring .circ-ring-n{color:#FFB347}
-.circ-phase-work{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.3)!important}
-.circ-phase-rest{background:rgba(72,202,228,.08);border-color:rgba(72,202,228,.2)!important}
-@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.4)}50%{box-shadow:0 0 0 8px rgba(255,107,107,0)}}
-.circ-running{animation:pulseRed 1.5s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -276,16 +257,15 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <nav>
   <div class="logo">Road to Super Sayan 🔥</div>
   <div class="nav-tabs">
-    <button class="ntb act" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
+    <button class="ntb act" data-tab="history"><div class="ico">📊</div>Stats</button>
     <button class="ntb" data-tab="routines"><div class="ico">📋</div>Routines</button>
-    <button class="ntb" data-tab="history"><div class="ico">📊</div>Stats</button>
-    <button class="ntb" data-tab="circuit"><div class="ico">⚡</div>Circuit</button>
+    <button class="ntb" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
   </div>
 </nav>
 
 <div id="app">
 <!-- WORKOUT -->
-<div id="tab-workout" class="section act">
+<div id="tab-workout" class="section">
   <div id="v-home">
     <div class="inner">
       <div class="sec-head"><div class="sec-title">Bonne séance 💪</div></div>
@@ -317,41 +297,6 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
   </div>
 </div>
 
-<!-- CIRCUIT / CARDIO / HIIT -->
-<div id="tab-circuit" class="section">
-  <!-- HOME VIEW -->
-  <div id="circ-v-home">
-    <div class="inner">
-      <div class="sec-head">
-        <div class="sec-title">⚡ Circuits & Cardio</div>
-        <button class="btn btn-ice btn-sm" id="btn-new-circuit">+ Nouveau</button>
-      </div>
-      <div id="circuits-list"></div>
-    </div>
-  </div>
-  <!-- ACTIVE CIRCUIT VIEW -->
-  <div id="circ-v-active" style="display:none;flex-direction:column;height:100%;overflow:hidden">
-    <div class="topbar" style="border-top:2px solid #FF6B6B">
-      <div>
-        <div style="font-size:.6rem;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Circuit</div>
-        <div class="timer-big" id="circ-timer" style="color:#FFB347">00:00</div>
-      </div>
-      <div id="circ-title" style="font-weight:800;font-size:.86rem;color:var(--t2);text-align:center;flex:1;padding:0 .4rem"></div>
-      <div style="display:flex;align-items:center;gap:.4rem">
-        <div class="live" style="color:#FF6B6B"><div class="ldot" style="background:#FF6B6B"></div>Live</div>
-        <button class="btn btn-xs" style="background:rgba(255,179,71,.15);color:#FFB347;border:1px solid rgba(255,179,71,.3)" id="btn-circ-pause">⏸</button>
-        <button class="btn btn-danger btn-sm" id="btn-circ-end">Fin ✓</button>
-      </div>
-    </div>
-    <!-- Rest bar for circuit (reuses same rest-bar) -->
-    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" id="circ-scroll">
-      <div class="inner" style="padding-top:.7rem">
-        <div id="circ-active-exos"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ROUTINES -->
 <div id="tab-routines" class="section">
   <div class="inner">
@@ -364,7 +309,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </div>
 
 <!-- HISTORY -->
-<div id="tab-history" class="section">
+<div id="tab-history" class="section act">
   <div class="inner">
     <div class="sec-head">
       <div class="sec-title">Statistiques</div>
@@ -435,9 +380,21 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       <input type="text" id="inp-create-name" placeholder="Ex: Curl barre EZ...">
     </div>
     <div class="form-g">
-      <label>Groupes musculaires (jusqu'à 3)</label>
-      <div id="create-muscle-chips" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem"></div>
-      <div id="create-muscle-selected" style="margin-top:.4rem;font-size:.72rem;color:var(--ice2);font-weight:700;min-height:1rem"></div>
+      <label>Groupe musculaire</label>
+      <select id="sel-create-muscle">
+        <option value="Pectoraux">Pectoraux</option>
+        <option value="Dos">Dos</option>
+        <option value="Biceps">Biceps</option>
+        <option value="Triceps">Triceps</option>
+        <option value="Épaules">Épaules</option>
+        <option value="Abdominaux">Abdominaux</option>
+        <option value="Quadriceps">Quadriceps</option>
+        <option value="Ischios">Ischios</option>
+        <option value="Fessiers">Fessiers</option>
+        <option value="Mollets">Mollets</option>
+        <option value="Avant-bras">Avant-bras</option>
+        <option value="Cardio">Cardio</option>
+      </select>
     </div>
     <div class="form-g">
       <label>Équipement</label>
@@ -584,66 +541,6 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <button class="btn btn-ghost" style="width:100%;margin-top:.65rem" id="btn-cancel-replace">Annuler</button>
   </div>
 </div>
-<!-- CIRCUIT MODAL -->
-<div id="m-circuit" class="modal-ov" style="display:none">
-  <div class="modal">
-    <div class="m-handle"></div>
-    <div class="m-title">⚡ Circuit / HIIT</div>
-    <div class="form-g">
-      <label>Nom du circuit</label>
-      <input type="text" id="inp-circ-name" placeholder="Ex: HIIT Full Body 🔥">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem">
-      <div class="form-g" style="margin:0">
-        <label>Tours</label>
-        <input type="number" id="inp-circ-rounds" value="3" min="1" max="20" style="text-align:center">
-      </div>
-      <div class="form-g" style="margin:0">
-        <label>Repos entre tours (s)</label>
-        <input type="number" id="inp-circ-rest-between" value="60" min="0" step="10" style="text-align:center">
-      </div>
-    </div>
-    <div class="form-g">
-      <label>Exercices</label>
-      <div id="circ-exo-list"></div>
-      <button class="btn btn-xs" style="width:100%;margin-top:.4rem;background:rgba(255,107,107,.1);color:#FF6B6B;border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:.45rem;font-weight:800" onclick="addExoToCircuit()">+ Ajouter exercice</button>
-    </div>
-    <div style="display:flex;gap:.45rem;margin-top:.85rem">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeCircuitModal()">Annuler</button>
-      <button class="btn" style="flex:2;background:linear-gradient(135deg,#FF6B6B,#FFB347);color:#fff;font-weight:900" onclick="saveCircuit()">Sauvegarder</button>
-    </div>
-  </div>
-</div>
-
-<!-- CIRCUIT FINISH MODAL -->
-<div id="m-finish-circuit" class="modal-ov ctr" style="display:none">
-  <div class="modal rd">
-    <div class="m-title">⚡ Circuit terminé !</div>
-    <div id="fin-stats" class="stats-row s2"></div>
-    <div class="form-g" style="margin-top:.5rem">
-      <label>Note (optionnel)</label>
-      <textarea id="inp-note-circuit" rows="2" style="resize:none;margin-top:.25rem" placeholder="Ressenti..."></textarea>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.7rem">
-      <button class="btn" style="width:100%;background:linear-gradient(135deg,#FF6B6B,#FFB347);color:#fff;font-weight:900" id="btn-save-circuit-wo">💾 Enregistrer</button>
-      <button class="btn btn-ghost" style="width:100%" id="btn-resume-circuit">↩ Reprendre</button>
-      <button class="btn btn-danger" style="width:100%" id="btn-discard-circuit-wo">🗑️ Ne pas enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- CIRCUIT EXO PICKER -->
-<div id="m-circ-exo" class="modal-ov" style="display:none;z-index:210">
-  <div class="modal">
-    <div class="m-handle"></div>
-    <div class="m-title">Choisir un exercice</div>
-    <div class="form-g"><input type="text" id="circ-exo-search" placeholder="Rechercher..." oninput="filterCircExos()"></div>
-    <div class="chip-scroll" id="circ-muscle-chips"></div>
-    <div id="circ-exo-list" style="max-height:50vh;overflow-y:scroll"></div>
-    <button class="btn btn-ghost" style="width:100%;margin-top:.65rem" onclick="ge('m-circ-exo').style.display='none'">Annuler</button>
-  </div>
-</div>
-
 <div id="m-rename" class="modal-ov ctr" style="display:none">
   <div class="modal rd" style="padding:1.2rem .9rem">
     <div class="m-title">✏️ Modifier l'exercice</div>
@@ -786,7 +683,7 @@ const EX=[
 const MUSCLES=['Tous','Pectoraux','Dos','Biceps','Triceps','Épaules','Abdominaux','Quadriceps','Ischios','Mollets','Avant-bras'];
 const EMOJIS=['💪','🔥','⚡','🏆','🎯','👊','🦾','😤','🐉','🦁','🏋️','🚀','❤️','🌟','😈','🤟','⚔️','💎','🌊','☄️','👟','🎽','💀','🦊','🥊','🎪','🏅','🔱','🛡️','🌪️'];
 
-let S={routines:[],sessions:[],cw:null,cw_circuit:null,calManual:{},customNames:{},customMuscles:{},customExercises:[],circuits:[]};
+let S={routines:[],sessions:[],cw:null,calManual:{},customNames:{},customMuscles:{},customExercises:[]};
 let calSel=[];
 let wInt=null,wStart=0,wPaused=false,wPausedAt=0,wPausedTotal=0;
 let rInt=null,rTotal=0,rLeft=0;
@@ -871,24 +768,6 @@ document.querySelectorAll('.ntb').forEach(b=>b.addEventListener('click',function
   if(this.dataset.tab==='routines')renderRoutines();
   if(this.dataset.tab==='history'){renderHistory();renderCalendar();renderCharts();}
   if(this.dataset.tab==='workout')renderHome();
-// Restore circuit if active
-if(S.cw_circuit){
-  circStart2=S.cw_circuit.start;circPausedTotal=S.cw_circuit.pausedMs||0;
-  circTimerInt=setInterval(()=>{if(!circPaused){const el=ge('circ-timer');if(el)el.textContent=fDur(Date.now()-circStart2-circPausedTotal);}},500);
-}
-  if(this.dataset.tab==='circuit'){
-    if(!S.circuits)S.circuits=[];
-    if(S.cw_circuit){
-      ge('circ-v-home').style.display='none';
-      ge('circ-v-active').style.display='flex';
-      ge('circ-title').textContent=S.cw_circuit.name;
-      renderCircActive();
-    } else {
-      ge('circ-v-active').style.display='none';
-      ge('circ-v-home').style.display='block';
-      renderCircuits();
-    }
-  }
 renderHistory();renderCalendar();renderCharts();
 
 // Calendar drag setup (one-time, not re-added on each render)
@@ -1187,11 +1066,9 @@ function filterReplaceExos(){
     </div></div>`).join('');
 }
 function pickReplace(id){
-  const all=[...EX,...(S.customExercises||[])];
-  const e=all.find(x=>x.id===id);if(!e||!replaceCb)return;
-  const resolved={...e,m:(S.customMuscles&&S.customMuscles[id])||e.m,n:(S.customNames&&S.customNames[id])||e.n};
+  const e=EX.find(x=>x.id===id);if(!e||!replaceCb)return;
   ge('m-replace-exo').style.display='none';
-  replaceCb(resolved);replaceCb=null;
+  replaceCb({...e});replaceCb=null;
 }
 
 // ── PAUSE ──
@@ -1473,10 +1350,8 @@ function filterExos(){
   </div>`).join('');
 }
 function pickEx(id){
-  const all=[...EX,...(S.customExercises||[])];
-  const e=all.find(x=>x.id===id);if(!e||!exoCb)return;
-  const resolved={...e,m:(S.customMuscles&&S.customMuscles[id])||e.m,n:(S.customNames&&S.customNames[id])||e.n};
-  closeExoModal();exoCb(resolved);exoCb=null;
+  const e=EX.find(x=>x.id===id);if(!e||!exoCb)return;
+  closeExoModal();exoCb({...e});exoCb=null;
 }
 
 // ── HISTORY ──
@@ -1882,11 +1757,9 @@ function getMuscleSets(period){
     }
     if(!include)return;
     (s.exercises||[]).forEach(ex=>{
+      const m=(S.customMuscles&&S.customMuscles[ex.id])||ex.m||exoDef(ex.id).m||'';
       const done=ex.sets.filter(st=>st.done).length;
-      if(!done)return;
-      // Support multiple cats (circuit exercises)
-      const cats=ex.cats&&ex.cats.length?ex.cats:[(S.customMuscles&&S.customMuscles[ex.id])||ex.m||exoDef(ex.id).m||''];
-      cats.forEach(cat=>{if(groups[cat]!==undefined)groups[cat]+=done;});
+      if(groups[m]!==undefined)groups[m]+=done;
     });
   });
   return groups;
@@ -1953,8 +1826,8 @@ function renderCharts(){
   if(chartP==='month'){
     const targetDate=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
     const ml=document.getElementById('month-label');
-    if(ml){const s=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});ml.textContent=s.charAt(0).toUpperCase()+s.slice(1);}
-        const mnxt=document.getElementById('btn-month-next');
+    if(ml)ml.textContent=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    const mnxt=document.getElementById('btn-month-next');
     if(mnxt){mnxt.style.opacity=chartMonthOffset>=0?'.3':'1';mnxt.style.pointerEvents=chartMonthOffset>=0?'none':'auto';}
   }
   // Year nav
@@ -2019,9 +1892,9 @@ ge('btn-save-r').addEventListener('click',saveRoutine);
 ge('btn-cancel-exo').addEventListener('click',closeExoModal);
 ge('btn-open-create-exo').addEventListener('click',()=>{
   ge('inp-create-name').value='';
+  ge('sel-create-muscle').value='Biceps';
   ge('sel-create-equip').value='Barre';
   ge('chk-create-bw').checked=false;
-  initCreateMuscleChips();
   ge('m-create-exo').style.display='flex';
 });
 ge('btn-back-wo').addEventListener('click',()=>{
@@ -2039,12 +1912,6 @@ ge('btn-emoji-toggle').addEventListener('click',toggleEmoji);
 ge('btn-cancel-replace').addEventListener('click',()=>ge('m-replace-exo').style.display='none');
 ge('exo-search').addEventListener('input',filterExos);
 ge('replace-search').addEventListener('input',filterReplaceExos);
-ge('btn-new-circuit').addEventListener('click',()=>openCircuitModal());
-ge('btn-circ-end').addEventListener('click',endCircuit);
-ge('btn-circ-pause').addEventListener('click',toggleCircPause);
-ge('btn-save-circuit-wo').addEventListener('click',saveCircuitWO);
-ge('btn-discard-circuit-wo').addEventListener('click',discardCircuitWO);
-ge('btn-resume-circuit').addEventListener('click',resumeCircuit);
 ge('cal-prev').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar();});
 ge('cal-next').addEventListener('click',()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar();});
 ge('inp-rname').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoutine();});
@@ -2104,496 +1971,15 @@ window.setMF=setMF;
 window.setCalDay=setCalDay;
 window.setCalDayMulti=setCalDayMulti;
 
-
-// ── CIRCUIT / CARDIO / HIIT ──
-const CARDIO_EXERCISES = [
-  // Cardio
-  {id:'c_sprint',n:'Sprint',cats:['Cardio'],ic:'🏃'},
-  {id:'c_burpee',n:'Burpees',cats:['Cardio','Jambes','Abdominaux'],ic:'💥'},
-  {id:'c_jump_rope',n:'Corde à sauter',cats:['Cardio'],ic:'🪢'},
-  {id:'c_mountain',n:'Mountain Climbers',cats:['Cardio','Abdominaux'],ic:'🏔️'},
-  {id:'c_box_jump',n:'Box Jump',cats:['Cardio','Jambes'],ic:'📦'},
-  {id:'c_jump_jack',n:'Jumping Jacks',cats:['Cardio'],ic:'⭐'},
-  {id:'c_high_knees',n:'Montées de genoux',cats:['Cardio','Jambes'],ic:'🦵'},
-  {id:'c_skater',n:'Skater Jump',cats:['Cardio','Jambes'],ic:'⛸️'},
-  // HIIT force
-  {id:'c_squat_jump',n:'Squat Jump',cats:['Jambes','Cardio'],ic:'⬆️'},
-  {id:'c_lunge_jump',n:'Fentes sautées',cats:['Jambes','Cardio'],ic:'🚶'},
-  {id:'c_push_up_ex',n:'Pompes explosives',cats:['Pectoraux','Cardio'],ic:'👐'},
-  {id:'c_plyo_push',n:'Pompes pliométriques',cats:['Pectoraux','Triceps'],ic:'👊'},
-  {id:'c_bear_crawl',n:'Bear Crawl',cats:['Cardio','Épaules','Abdominaux'],ic:'🐻'},
-  {id:'c_sprawl',n:'Sprawl',cats:['Cardio','Abdominaux'],ic:'🌊'},
-  {id:'c_broad_jump',n:'Saut en longueur',cats:['Cardio','Jambes'],ic:'🦘'},
-  {id:'c_lateral_bound',n:'Bonds latéraux',cats:['Cardio','Jambes'],ic:'↔️'},
-  // Renforcement
-  {id:'c_plank_ex',n:'Planche dynamique',cats:['Abdominaux'],ic:'📏'},
-  {id:'c_hollow_body',n:'Hollow Body',cats:['Abdominaux'],ic:'🌀'},
-  {id:'c_russian_tw',n:'Russian Twist',cats:['Abdominaux'],ic:'🔄'},
-  {id:'c_leg_raise_ex',n:'Relevé de jambes',cats:['Abdominaux'],ic:'⬆️'},
-  {id:'c_pike',n:'Pike Push-up',cats:['Épaules','Triceps'],ic:'▲'},
-  {id:'c_dip_ex',n:'Dips explosifs',cats:['Triceps','Pectoraux'],ic:'⬇️'},
-  {id:'c_pull_neg',n:'Tractions négatives',cats:['Dos','Biceps'],ic:'⬆️'},
-  {id:'c_inverted_row',n:'Rowing inversé',cats:['Dos'],ic:'🚣'},
-  // Gainage
-  {id:'c_side_plank',n:'Planche latérale',cats:['Abdominaux'],ic:'📐'},
-  {id:'c_superman',n:'Superman',cats:['Dos'],ic:'🦸'},
-  {id:'c_glute_bridge_ex',n:'Hip Thrust explosif',cats:['Fessiers','Jambes'],ic:'⬆️'},
-  {id:'c_wall_sit',n:'Chaise murale',cats:['Jambes'],ic:'🪑'},
-  {id:'c_step_up',n:'Montée sur banc',cats:['Jambes'],ic:'🪜'},
-  {id:'c_ice_skater',n:'Ice Skater',cats:['Cardio','Jambes'],ic:'🧊'},
-];
-
-const CIRCUIT_CATS=['Cardio','Pectoraux','Dos','Épaules','Biceps','Triceps','Abdominaux','Jambes','Fessiers'];
-let circuitExoCb=null;
-let activeCircuit=null;
-let circTimer=null,circStart=0;
-let workTimer=null,workLeft=0,workTotal=0;
-let circPhase='work'; // 'work' or 'rest'
-let circExoIdx=0,circSetIdx=0;
-let circWorkInterval=null;
-
-// Init circuit state
-if(!S.circuits)S.circuits=[];
-
-function renderCircuits(){
-  if(!S.circuits)S.circuits=[];
-  const c=ge('circuits-list');
-  if(!S.circuits.length){
-    c.innerHTML=`<div class="empty"><div class="ei">⚡</div><p style="font-weight:700;margin-bottom:.8rem">Aucun circuit</p><p style="font-size:.82rem;margin-bottom:.9rem">Crée des séances HIIT, Cardio ou de renforcement</p></div>`;
-    return;
-  }
-  c.innerHTML=S.circuits.map((circ,i)=>{
-    const totalTime=estimateCircuitTime(circ);
-    return`<div class="circ-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.4rem">
-        <div>
-          <div class="circ-name">${circ.name}</div>
-          <div class="circ-meta">${circ.exercises.length} exercices · ~${totalTime} min · ${circ.rounds||1} tour${(circ.rounds||1)>1?'s':''}</div>
-        </div>
-        <div style="display:flex;gap:.3rem;flex-shrink:0">
-          <button class="btn-icon" onclick="editCircuit(${i})">✏️</button>
-          <button class="btn-icon" onclick="delCircuit(${i})">🗑️</button>
-          <button class="btn" style="background:linear-gradient(135deg,#FF6B6B,#FFB347);color:#fff;padding:.38rem .75rem;font-size:.76rem;border-radius:10px;font-weight:800" onclick="startCircuit(${i})">▶ Start</button>
-        </div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:.25rem">
-        ${[...new Set(circ.exercises.flatMap(e=>e.cats||[]))].slice(0,5).map(cat=>`<span class="tag" style="background:rgba(255,107,107,.1);color:#FF6B6B;border:1px solid rgba(255,107,107,.2)">${cat}</span>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function estimateCircuitTime(circ){
-  const rounds=circ.rounds||1;
-  let secs=0;
-  (circ.exercises||[]).forEach(ex=>{
-    const sets=ex.sets||1;
-    const workT=ex.workTime||30;
-    const restT=ex.restTime||15;
-    secs+=(workT+restT)*sets;
-  });
-  return Math.ceil(secs*rounds/60);
-}
-
-// ── CIRCUIT MODAL ──
-let editCircIdx=null,tmpCircExos=[];
-
-function openCircuitModal(idx=null){
-  editCircIdx=idx;
-  if(!S.circuits)S.circuits=[];
-  if(idx!==null){
-    const c=S.circuits[idx];
-    ge('inp-circ-name').value=c.name;
-    ge('inp-circ-rounds').value=c.rounds||1;
-    ge('inp-circ-rest-between').value=c.restBetweenRounds||60;
-    tmpCircExos=c.exercises.map(e=>({...e}));
-  } else {
-    ge('inp-circ-name').value='';
-    ge('inp-circ-rounds').value=3;
-    ge('inp-circ-rest-between').value=60;
-    tmpCircExos=[];
-  }
-  renderCircExos();
-  ge('m-circuit').style.display='flex';
-}
-function closeCircuitModal(){ge('m-circuit').style.display='none';}
-function delCircuit(i){if(confirm('Supprimer ce circuit ?')){S.circuits.splice(i,1);save();renderCircuits();}}
-function editCircuit(i){openCircuitModal(i);}
-
-function renderCircExos(){
-  const c=ge('circ-exo-list');
-  if(!tmpCircExos.length){c.innerHTML='<div style="color:var(--t3);font-size:.8rem;font-weight:600;padding:.3rem 0">Aucun exercice</div>';return;}
-  c.innerHTML='';
-  tmpCircExos.forEach((ex,i)=>{
-    const wt=ex.workTime||30;
-    const rt=ex.restTime||15;
-    const workOpts=[15,30,45,60,90,120].map(v=>`<option value="${v}"${wt===v?' selected':''}>${v}s</option>`).join('');
-    const restOpts=[0,10,15,20,30,45,60].map(v=>`<option value="${v}"${rt===v?' selected':''}>${v}s</option>`).join('');
-    const blk=document.createElement('div');
-    blk.style.cssText='background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:.5rem;overflow:hidden';
-    blk.innerHTML=`
-      <div style="display:flex;align-items:center;padding:.6rem .8rem;gap:.5rem;background:rgba(7,16,26,.4)">
-        <div style="display:flex;flex-direction:column;gap:.1rem;flex-shrink:0">
-          <button class="btn-icon" style="font-size:.75rem;padding:.1rem;${i===0?'opacity:.2;pointer-events:none':''}" onclick="moveCircExo(${i},-1)">▲</button>
-          <button class="btn-icon" style="font-size:.75rem;padding:.1rem;${i===tmpCircExos.length-1?'opacity:.2;pointer-events:none':''}" onclick="moveCircExo(${i},1)">▼</button>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:.88rem;word-break:break-word">${ex.n||ex.name||'?'}</div>
-          <div style="display:flex;gap:.2rem;flex-wrap:wrap;margin-top:.18rem">
-            ${(ex.cats||[ex.m||'']).map(cat=>`<span class="tag" style="background:rgba(255,107,107,.1);color:#FF6B6B;border:1px solid rgba(255,107,107,.2)">${cat}</span>`).join('')}
-          </div>
-        </div>
-        <button class="btn-icon" onclick="tmpCircExos.splice(${i},1);renderCircExos()">✕</button>
-      </div>
-      <div style="padding:.5rem .8rem .65rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;align-items:center">
-        <div>
-          <div style="font-size:.63rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.2rem">Séries</div>
-          <input type="number" min="1" max="20" value="${ex.sets||1}" style="text-align:center;font-size:.88rem;font-weight:700;padding:.3rem" onchange="tmpCircExos[${i}].sets=+this.value">
-        </div>
-        <div>
-          <div style="font-size:.63rem;color:#FF6B6B;font-weight:700;text-transform:uppercase;margin-bottom:.2rem">⏱ Travail</div>
-          <select style="font-size:.78rem;padding:.3rem;text-align:center" onchange="tmpCircExos[${i}].workTime=+this.value">${workOpts}</select>
-        </div>
-        <div>
-          <div style="font-size:.63rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.2rem">😤 Récup</div>
-          <select style="font-size:.78rem;padding:.3rem;text-align:center" onchange="tmpCircExos[${i}].restTime=+this.value">${restOpts}</select>
-        </div>
-      </div>
-      <div style="padding:0 .8rem .6rem;display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-        <div>
-          <div style="font-size:.63rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.2rem">Reps (optionnel)</div>
-          <input type="number" min="0" value="${ex.reps||''}" placeholder="—" style="text-align:center;font-size:.88rem;font-weight:700;padding:.3rem" onchange="tmpCircExos[${i}].reps=+this.value">
-        </div>
-        <div>
-          <div style="font-size:.63rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.2rem">Poids kg (optionnel)</div>
-          <input type="number" min="0" step="0.5" value="${ex.weight||''}" placeholder="—" style="text-align:center;font-size:.88rem;font-weight:700;padding:.3rem" onchange="tmpCircExos[${i}].weight=+this.value">
-        </div>
-      </div>`;
-    c.appendChild(blk);
-  });
-}
-
-function moveCircExo(i,dir){
-  const j=i+dir;if(j<0||j>=tmpCircExos.length)return;
-  const tmp=tmpCircExos[i];tmpCircExos[i]=tmpCircExos[j];tmpCircExos[j]=tmp;
-  renderCircExos();
-}
-
-function addExoToCircuit(){
-  // Open a picker that includes both cardio exercises and regular EX
-  openCircuitExoPicker(e=>{
-    tmpCircExos.push({...e,sets:3,workTime:30,restTime:15,reps:0,weight:0});
-    renderCircExos();
-  });
-}
-
-function saveCircuit(){
-  const name=ge('inp-circ-name').value.trim();if(!name)return;
-  if(!S.circuits)S.circuits=[];
-  const circ={name,exercises:tmpCircExos,rounds:+ge('inp-circ-rounds').value||1,restBetweenRounds:+ge('inp-circ-rest-between').value||60};
-  if(editCircIdx!==null)S.circuits[editCircIdx]=circ;else S.circuits.push(circ);
-  save();closeCircuitModal();renderCircuits();
-}
-
-// ── CIRCUIT EXO PICKER ──
-let circMFilter='Tous';
-function openCircuitExoPicker(cb){
-  circuitExoCb=cb;circMFilter='Tous';
-  ge('circ-exo-search').value='';
-  const chips=ge('circ-muscle-chips');
-  chips.innerHTML='';
-  ['Tous',...CIRCUIT_CATS].forEach(m=>{
-    const chip=document.createElement('div');
-    chip.className='chip'+(m===circMFilter?' on':'');
-    chip.textContent=m;
-    chip.addEventListener('click',function(){
-      circMFilter=m;
-      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
-      this.classList.add('on');
-      filterCircExos();
-    });
-    chips.appendChild(chip);
-  });
-  filterCircExos();
-  ge('m-circ-exo').style.display='flex';
-}
-function setCircMF(m,el){circMFilter=m;document.querySelectorAll('#circ-muscle-chips .chip').forEach(c=>c.classList.remove('on'));if(el)el.classList.add('on');filterCircExos();}
-function filterCircExos(){
-  const q=(ge('circ-exo-search')?.value||'').toLowerCase();
-  const allEx=[
-    ...CARDIO_EXERCISES.map(e=>({id:e.id,n:e.n,cats:e.cats||[]})),
-    ...EX.map(e=>({id:e.id,n:(S.customNames&&S.customNames[e.id])||e.n,cats:[(S.customMuscles&&S.customMuscles[e.id])||e.m]})),
-    ...(S.customExercises||[]).map(e=>({id:e.id,n:(S.customNames&&S.customNames[e.id])||e.n,cats:[e.m]}))
-  ];
-  const list=allEx.filter(e=>{
-    const mOk=circMFilter==='Tous'||(e.cats||[]).some(c=>c===circMFilter);
-    const sOk=!q||e.n.toLowerCase().includes(q)||(e.cats||[]).join(' ').toLowerCase().includes(q);
-    return mOk&&sOk;
-  });
-  const colors={'Cardio':'#FF6B6B','Pectoraux':'#0096C7','Dos':'#40916C','Biceps':'#9B5DE5','Triceps':'#E63946','Épaules':'#FF8C00','Abdominaux':'#607D8B','Jambes':'#A0522D','Fessiers':'#7B1FA2'};
-  const listEl=ge('circ-exo-list');
-  if(!listEl)return;
-  listEl.innerHTML='';
-  list.forEach(e=>{
-    const div=document.createElement('div');
-    div.className='ep-item';
-    div.innerHTML=`<div style="flex:1;min-width:0">
-      <div class="ep-nm">${e.n}</div>
-      <div style="display:flex;gap:.2rem;flex-wrap:wrap;margin:.15rem 0">
-        ${(e.cats||[]).map(cat=>`<span class="tag" style="background:${colors[cat]||'#333'}22;color:${colors[cat]||'#90CAF9'};border:1px solid ${colors[cat]||'#555'}44">${cat}</span>`).join('')}
-      </div>
-    </div>`;
-    div.addEventListener('click',()=>pickCircExo(e.id));
-    listEl.appendChild(div);
-  });
-}
-function pickCircExo(id){
-  const all=[...CARDIO_EXERCISES,...EX,...(S.customExercises||[])];
-  const e=all.find(x=>x.id===id);if(!e||!circuitExoCb)return;
-  ge('m-circ-exo').style.display='none';
-  circuitExoCb({...e,cats:e.cats||[e.m||'']});
-  circuitExoCb=null;
-}
-
-// ── RUN CIRCUIT ──
-let circRound=1;
-function startCircuit(i){
-  const c=S.circuits[i];
-  // Build active workout in same format as regular workout
-  const cw={
-    name:c.name,
-    isCircuit:true,
-    circuitIdx:i,
-    rounds:c.rounds||1,
-    restBetweenRounds:c.restBetweenRounds||60,
-    start:Date.now(),pausedMs:0,notes:'',
-    exercises:c.exercises.map(ex=>{
-      const last=getLastSession(ex.id);
-      const sets=Array.from({length:ex.sets||1},()=>({
-        weight:ex.weight||0,reps:ex.reps||0,done:false,
-        workTime:ex.workTime||30,restTime:ex.restTime||15
-      }));
-      return{...ex,sets,_prev:last?last.ex:null,
-        cats:ex.cats||[ex.m||''],bw:!ex.weight&&ex.weight!==0?true:false};
-    })
-  };
-  // Store as active circuit workout
-  S.cw_circuit=cw;save();
-  circPaused=false;circPausedTotal=0;
-  showCircActive();
-  startCircTimer();
-}
-
-let circPaused=false,circPausedAt=0,circPausedTotal=0;
-let circTimerInt=null,circStart2=0;
-
-function startCircTimer(){
-  circStart2=S.cw_circuit.start;
-  clearInterval(circTimerInt);
-  circTimerInt=setInterval(()=>{
-    if(circPaused)return;
-    const el=ge('circ-timer');
-    if(el)el.textContent=fDur(Date.now()-circStart2-circPausedTotal);
-  },500);
-}
-
-function showCircActive(){
-  ge('circ-v-home').style.display='none';
-  ge('circ-v-active').style.display='flex';
-  ge('circ-title').textContent=S.cw_circuit.name;
-  renderCircActive();
-}
-
-function renderCircActive(){
-  const c=ge('circ-active-exos');c.innerHTML='';
-  // Round selector
-  const rounds=S.cw_circuit.rounds||1;
-  if(rounds>1){
-    const rd=document.createElement('div');
-    rd.style.cssText='display:flex;gap:.4rem;margin-bottom:.65rem;flex-wrap:wrap';
-    rd.innerHTML=`<span style="font-size:.72rem;color:var(--t3);font-weight:700;align-self:center">Tour :</span>`+
-      Array.from({length:rounds},(_,i)=>`<button class="btn btn-xs ${(S.cw_circuit._currentRound||0)===i?'btn-ice':'btn-ghost'}" onclick="setCircRound(${i})">${i+1}</button>`).join('');
-    c.appendChild(rd);
-  }
-  S.cw_circuit.exercises.forEach((ex,ei)=>{
-    c.appendChild(buildCircExoBlock(ex,ei));
-    renderCircSets(ei);
-  });
-}
-
-function setCircRound(r){S.cw_circuit._currentRound=r;save();renderCircActive();}
-
-function buildCircExoBlock(ex,ei){
-  const colors={'Cardio':'#FF6B6B','Pectoraux':'#0096C7','Dos':'#40916C','Biceps':'#9B5DE5','Triceps':'#E63946','Épaules':'#FF8C00','Abdominaux':'#607D8B','Jambes':'#A0522D','Fessiers':'#7B1FA2'};
-  const mainColor=colors[(ex.cats||[])[0]]||'#48CAE4';
-  const prev=ex._prev;
-  const prevDone=prev?prev.sets.filter(s=>s.done):[];
-
-  const div=document.createElement('div');
-  div.className='exo-block su';
-  div.style.borderLeftColor=mainColor;
-  div.style.borderLeftWidth='3px';
-
-  const head=document.createElement('div');
-  head.className='exo-head';
-  head.innerHTML=`
-    <div style="flex:1;min-width:0">
-      <div class="exo-nm">${ex.n||ex.name}</div>
-      <div class="exo-sub" style="display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem">
-        ${(ex.cats||[]).map(cat=>`<span class="tag" style="background:${colors[cat]||'#333'}22;color:${colors[cat]||'#90CAF9'};border:1px solid ${colors[cat]||'#555'}44">${cat}</span>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;gap:.3rem;align-items:center">
-      <button class="btn-icon" style="font-size:1rem;font-weight:900;color:var(--ice)" id="ctoggle-${ei}" onclick="toggleCircSets(${ei})">−</button>
-      <button class="btn-icon" onclick="rmCircExo(${ei})" title="Supprimer">✕</button>
-    </div>`;
-  div.appendChild(head);
-
-  if(prevDone.length){
-    const pd=document.createElement('div');
-    pd.style.cssText='padding:0 .85rem .35rem;font-size:.68rem;color:var(--t3);font-weight:700';
-    pd.textContent='Préc: '+prevDone.map((s,i)=>`${i+1}) ${s.weight?s.weight+'kg×':''}${s.reps||'?'}rep`).join(' · ');
-    div.appendChild(pd);
-  }
-
-  const body=document.createElement('div');
-  body.className='exo-body';body.id='cbody-'+ei;
-  const tbl=document.createElement('table');
-  tbl.className='stbl';
-  tbl.innerHTML=`<thead><tr>
-    <th>#</th><th>⏱ Travail</th><th>kg</th><th>Reps</th><th>✕</th><th>✓</th>
-  </tr></thead><tbody id="csets-${ei}"></tbody>`;
-  body.appendChild(tbl);
-  const addBtn=document.createElement('button');
-  addBtn.className='btn btn-ghost btn-xs';addBtn.style.marginTop='.45rem';
-  addBtn.textContent='+ Série';addBtn.addEventListener('click',()=>addCircSet(ei));
-  body.appendChild(addBtn);
-  div.appendChild(body);
-  return div;
-}
-
-function renderCircSets(ei){
-  const ex=S.cw_circuit.exercises[ei];
-  const tbody=ge('csets-'+ei);if(!tbody)return;
-  tbody.innerHTML='';
-  ex.sets.forEach((s,si)=>{
-    const workOpts=[15,30,45,60,90,120].map(v=>`<option value="${v}"${(s.workTime||30)===v?' selected':''}>${v}s</option>`).join('');
-    const tr=document.createElement('tr');
-    tr.className=s.done?'set-done':'';
-    tr.innerHTML=`
-      <td><span class="s-num">${si+1}</span></td>
-      <td><select style="width:58px;padding:.22rem .15rem;font-size:.72rem;border-radius:7px" onchange="updCircS(${ei},${si},'workTime',this.value)">${workOpts}</select></td>
-      <td><input type="number" class="sinp" value="${s.weight||''}" placeholder="0" min="0" step="0.5" onchange="updCircS(${ei},${si},'weight',this.value)"></td>
-      <td><input type="number" class="sinp" value="${s.reps||''}" placeholder="—" min="0" onchange="updCircS(${ei},${si},'reps',this.value)"></td>
-      <td><button class="del-set" onclick="delCircSet(${ei},${si})">✕</button></td>
-      <td><button class="chk${s.done?' done':''}" onclick="togCircSet(${ei},${si})">${s.done?'✓':''}</button></td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function updCircS(ei,si,f,v){
-  const s=S.cw_circuit.exercises[ei].sets[si];
-  s[f]=f==='reps'||f==='workTime'?parseInt(v)||0:parseFloat(v)||0;
-  save();renderCircSets(ei);
-}
-function delCircSet(ei,si){S.cw_circuit.exercises[ei].sets.splice(si,1);save();renderCircSets(ei);}
-function addCircSet(ei){
-  const ex=S.cw_circuit.exercises[ei];
-  const l=ex.sets[ex.sets.length-1]||{weight:0,reps:0,workTime:30,restTime:15};
-  ex.sets.push({...l,done:false});save();renderCircSets(ei);
-}
-function togCircSet(ei,si){
-  const ex=S.cw_circuit.exercises[ei];
-  ex.sets[si].done=!ex.sets[si].done;save();renderCircSets(ei);
-  if(ex.sets[si].done){
-    const restT=ex.restTime||15;
-    if(restT>0)startRest(restT);
-  }
-}
-function rmCircExo(ei){S.cw_circuit.exercises.splice(ei,1);save();renderCircActive();}
-function toggleCircSets(ei){
-  const body=ge('cbody-'+ei);const btn=ge('ctoggle-'+ei);
-  if(!body||!btn)return;
-  const hidden=body.style.display==='none';
-  body.style.display=hidden?'block':'none';
-  btn.textContent=hidden?'−':'+';
-}
-function toggleCircPause(){
-  circPaused=!circPaused;
-  const btn=ge('btn-circ-pause');
-  if(circPaused){circPausedAt=Date.now();btn.textContent='▶';ge('circ-timer').style.color='var(--orange)';}
-  else{circPausedTotal+=(Date.now()-circPausedAt);S.cw_circuit.pausedMs=circPausedTotal;save();btn.textContent='⏸';ge('circ-timer').style.color='#FFB347';}
-}
-function endCircuit(){
-  if(circPaused)toggleCircPause();
-  clearInterval(circTimerInt);
-  const w=S.cw_circuit;
-  w.duration=Date.now()-w.start-(w.pausedMs||0);
-  w.volume=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).reduce((b,s)=>b+((s.weight||0)*(s.reps||0)),0),0);
-  w.totalSets=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).length,0);
-  w.totalReps=w.exercises.reduce((a,ex)=>a+ex.sets.filter(s=>s.done).reduce((b,s)=>b+(s.reps||0),0),0);
-  ge('fin-stats').innerHTML=`
-    <div class="stat-box"><div class="sv">${fDur(w.duration)}</div><div class="sl">Durée</div></div>
-    <div class="stat-box"><div class="sv">${w.totalSets}</div><div class="sl">Séries</div></div>
-    <div class="stat-box"><div class="sv">${fKg(w.volume)}</div><div class="sl">Volume</div></div>
-    <div class="stat-box"><div class="sv">${w.exercises.length}</div><div class="sl">Exercices</div></div>`;
-  ge('inp-note').value='';
-  ge('m-finish-circuit').style.display='flex';
-}
-function saveCircuitWO(){
-  const w=S.cw_circuit;
-  w.notes=ge('inp-note-circuit').value;
-  w.savedAt=Date.now();
-  S.sessions.push({...w});
-  S.cw_circuit=null;save();skipRest();
-  ge('m-finish-circuit').style.display='none';
-  ge('circ-v-active').style.display='none';
-  ge('circ-v-home').style.display='block';
-  renderCircuits();
-}
-function discardCircuitWO(){
-  if(!confirm('Abandonner sans enregistrer ?'))return;
-  S.cw_circuit=null;clearInterval(circTimerInt);save();skipRest();
-  ge('m-finish-circuit').style.display='none';
-  ge('circ-v-active').style.display='none';
-  ge('circ-v-home').style.display='block';
-  renderCircuits();
-}
-function resumeCircuit(){
-  ge('m-finish-circuit').style.display='none';
-  startCircTimer();
-}
-
-function stopCircuit(){endCircuit();}
-
-window.moveCircExo=moveCircExo;
-window.togCircSet=togCircSet;window.delCircSet=delCircSet;window.addCircSet=addCircSet;
-window.updCircS=updCircS;window.rmCircExo=rmCircExo;window.toggleCircSets=toggleCircSets;
-window.setCircRound=setCircRound;window.endCircuit=endCircuit;window.stopCircuit=stopCircuit;
-window.saveCircuitWO=saveCircuitWO;window.discardCircuitWO=discardCircuitWO;window.resumeCircuit=resumeCircuit;
-window.addExoToCircuit=addExoToCircuit;
-window.saveCircuit=saveCircuit;
-window.editCircuit=editCircuit;
-window.delCircuit=delCircuit;
-window.openCircuitModal=openCircuitModal;
-window.startCircuit=startCircuit;
-window.stopCircuit=stopCircuit;
-window.setCircMF=setCircMF;
-window.filterCircExos=filterCircExos;
-window.pickCircExo=pickCircExo;
-
-
 // ── EXPORT / IMPORT ──
 function exportData(){
   const data={
-    version:5,
+    version:4,
     exportDate:new Date().toISOString(),
     routines:S.routines,
     sessions:S.sessions,
     calManual:S.calManual||{},
-    customNames:S.customNames||{},
-    circuits:S.circuits||[],
-    customExercises:S.customExercises||[]
+    customNames:S.customNames||{}
   };
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json'});
@@ -2621,8 +2007,6 @@ function importData(input){
       if(data.sessions)S.sessions=data.sessions;
       if(data.calManual)S.calManual=data.calManual;
       if(data.customNames)S.customNames=data.customNames;
-      if(data.circuits)S.circuits=data.circuits;
-      if(data.customExercises)S.customExercises=data.customExercises;
       save();
       renderHistory();renderCalendar();renderCharts();
       showToast('✅ Données restaurées avec succès !','var(--green)');
@@ -2653,50 +2037,29 @@ function openCreateExo(){
   ge('chk-create-bw').checked=false;
   ge('m-create-exo').style.display='flex';
 }
-let _createMuscles=[];
-function initCreateMuscleChips(){
-  _createMuscles=[];
-  const allMuscles=['Cardio','Pectoraux','Dos','Biceps','Triceps','Épaules','Abdominaux','Quadriceps','Ischios','Fessiers','Mollets','Avant-bras'];
-  const cont=ge('create-muscle-chips');if(!cont)return;
-  cont.innerHTML='';
-  allMuscles.forEach(m=>{
-    const chip=document.createElement('div');
-    chip.className='chip';chip.textContent=m;chip.dataset.m=m;
-    chip.addEventListener('click',function(){
-      if(_createMuscles.includes(m)){
-        _createMuscles=_createMuscles.filter(x=>x!==m);
-        this.classList.remove('on');
-      } else {
-        if(_createMuscles.length>=3){showToast('Maximum 3 groupes musculaires','var(--orange)');return;}
-        _createMuscles.push(m);
-        this.classList.add('on');
-      }
-      ge('create-muscle-selected').textContent=_createMuscles.length?'Sélectionné : '+_createMuscles.join(', '):'';
-    });
-    cont.appendChild(chip);
-  });
-  ge('create-muscle-selected').textContent='';
-}
 function confirmCreateExo(){
   const name=ge('inp-create-name').value.trim();
   if(!name)return;
-  if(_createMuscles.length===0){showToast('Sélectionne au moins 1 groupe musculaire','var(--orange)');return;}
+  const muscle=ge('sel-create-muscle').value;
   const equip=ge('sel-create-equip').value;
   const bw=ge('chk-create-bw').checked;
+  // Generate unique ID
   const id='custom_'+Date.now();
-  const colors={'Cardio':'#FF6B6B','Pectoraux':'#0077B6','Dos':'#1B4332','Biceps':'#6A0572','Triceps':'#9B2335','Épaules':'#CC5500','Abdominaux':'#374151','Quadriceps':'#7B3F00','Ischios':'#4A235A','Fessiers':'#6A1B9A','Mollets':'#005F73','Avant-bras':'#3D405B'};
-  const mainMuscle=_createMuscles[0];
-  const newExo={id,n:name,m:mainMuscle,cats:_createMuscles,e:bw?'Poids de corps':equip,bw,ic:'💪',c:colors[mainMuscle]||'#0077B6',d:name+' — '+_createMuscles.join(', ')};
+  const colors={Pectoraux:'#0077B6',Dos:'#1B4332',Biceps:'#6A0572',Triceps:'#9B2335',
+    Épaules:'#CC5500',Abdominaux:'#374151',Quadriceps:'#7B3F00',Ischios:'#4A235A',
+    Fessiers:'#6A1B9A',Mollets:'#005F73','Avant-bras':'#3D405B',Cardio:'#1565C0'};
+  const newExo={id,n:name,m:muscle,e:bw?'Poids de corps':equip,bw,ic:'💪',c:colors[muscle]||'#0077B6',d:name+' — '+muscle};
   if(!S.customExercises)S.customExercises=[];
   S.customExercises.push(newExo);
   save();
   ge('m-create-exo').style.display='none';
-  filterExos();filterReplaceExos();filterCircExos();
+  // Reopen exo picker with new exercise visible
+  filterExos();
+  filterReplaceExos();
   showToast('✅ Exercice "'+name+'" créé !','var(--green)');
 }
 window.openCreateExo=openCreateExo;
 window.confirmCreateExo=confirmCreateExo;
-window.initCreateMuscleChips=initCreateMuscleChips;
 
 window.exportData=exportData;
 window.importData=importData;window.pickEx=pickEx;
@@ -2719,39 +2082,5 @@ if(S._restStart&&S._restTotal){
   else{S._restStart=null;S._restTotal=0;save();}
 }
 renderHome();
-
-const listEl2=ge('exo-list');
-  if(!listEl2)return;
-  listEl2.innerHTML='';
-  list.forEach(e=>{
-    const isCustom=(S.customExercises||[]).some(x=>x.id===e.id);
-    const div=document.createElement('div');
-    div.className='ep-item';
-    div.style.position='relative';
-    div.innerHTML='<div style="flex:1;min-width:0"><div class="ep-nm">'+e.n+'</div>'
-      +'<div style="display:flex;gap:.25rem;margin:.15rem 0;flex-wrap:wrap">'
-      +'<span class="tag t-blue">'+e.m+'</span>'
-      +'<span class="tag '+(e.bw?'t-ice':'t-orange')+'">'+(e.bw?'Poids corps':e.e)+'</span>'
-      +(e.cats&&e.cats.length>1?e.cats.slice(1).map(c=>'<span class="tag t-ice">'+c+'</span>').join(''):'')
-      +'</div>'
-      +(e.d?'<div class="ep-desc">'+e.d+'</div>':'')
-      +'</div>'
-      +(isCustom?'<button class="btn-icon" style="color:var(--red);font-size:.85rem;flex-shrink:0" data-del-id="'+e.id+'">🗑️</button>':'');
-    // Click on item = pick (not on delete button)
-    div.addEventListener('click',function(ev){
-      if(ev.target.closest('[data-del-id]'))return;
-      pickEx(e.id);
-    });
-    // Delete button
-    const delBtn=div.querySelector('[data-del-id]');
-    if(delBtn)delBtn.addEventListener('click',function(ev){
-      ev.stopPropagation();
-      if(!confirm('Supprimer "'+e.n+'" ?'))return;
-      S.customExercises=(S.customExercises||[]).filter(x=>x.id!==e.id);
-      save();filterExos();
-    });
-    listEl2.appendChild(div);
-  });
-</script>
-</body>
+</script></body>
 </html>
