@@ -27,12 +27,12 @@ nav{height:var(--nav);flex-shrink:0;position:relative;z-index:60;
   background:rgba(7,16,26,.97);backdrop-filter:blur(24px);
   border-bottom:1px solid rgba(72,202,228,.1);
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 .55rem 0 .7rem}
-.logo{font-weight:900;font-size:.88rem;color:var(--text);white-space:nowrap;letter-spacing:.1px}
+  padding:0 .3rem 0 .6rem}
+.logo{font-weight:900;font-size:.75rem;color:var(--text);white-space:nowrap;letter-spacing:.1px}
 .nav-tabs{display:flex;gap:.1rem}
-.ntb{background:none;border:none;color:var(--t3);font-size:.65rem;font-weight:700;
-  padding:.38rem .52rem;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;gap:.1rem;transition:all .18s;text-transform:uppercase;letter-spacing:.2px}
+.ntb{background:none;border:none;color:var(--t3);font-size:.58rem;font-weight:700;
+  padding:.35rem .38rem;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:.08rem;transition:all .18s;text-transform:uppercase;letter-spacing:.15px}
 .ntb .ico{font-size:.95rem;line-height:1}
 .ntb.act{color:var(--ice);background:rgba(72,202,228,.1);box-shadow:inset 0 0 0 1px rgba(72,202,228,.2)}
 
@@ -276,16 +276,16 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <nav>
   <div class="logo">Road to Super Sayan 🔥</div>
   <div class="nav-tabs">
-    <button class="ntb act" data-tab="history"><div class="ico">📊</div>Stats</button>
+    <button class="ntb act" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
     <button class="ntb" data-tab="routines"><div class="ico">📋</div>Routines</button>
+    <button class="ntb" data-tab="history"><div class="ico">📊</div>Stats</button>
     <button class="ntb" data-tab="circuit"><div class="ico">⚡</div>Circuit</button>
-    <button class="ntb" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
   </div>
 </nav>
 
 <div id="app">
 <!-- WORKOUT -->
-<div id="tab-workout" class="section">
+<div id="tab-workout" class="section act">
   <div id="v-home">
     <div class="inner">
       <div class="sec-head"><div class="sec-title">Bonne séance 💪</div></div>
@@ -354,7 +354,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 </div>
 
 <!-- HISTORY -->
-<div id="tab-history" class="section act">
+<div id="tab-history" class="section">
   <div class="inner">
     <div class="sec-head">
       <div class="sec-title">Statistiques</div>
@@ -2262,37 +2262,52 @@ let circMFilter='Tous';
 function openCircuitExoPicker(cb){
   circuitExoCb=cb;circMFilter='Tous';
   ge('circ-exo-search').value='';
-  ge('circ-muscle-chips').innerHTML=[...CIRCUIT_CATS,'Tous'].reverse().concat([]).reduce((a,m)=>a,
-    ['Tous',...CIRCUIT_CATS].map(m=>`<div class="chip${m===circMFilter?' on':''}" onclick="setCircMF('${m}',this)">${m}</div>`).join('')
-  );
-  ge('circ-muscle-chips').innerHTML=['Tous',...CIRCUIT_CATS].map(m=>`<div class="chip${m===circMFilter?' on':''}" onclick="setCircMF('${m}',this)">${m}</div>`).join('');
+  const chips=ge('circ-muscle-chips');
+  chips.innerHTML='';
+  ['Tous',...CIRCUIT_CATS].forEach(m=>{
+    const chip=document.createElement('div');
+    chip.className='chip'+(m===circMFilter?' on':'');
+    chip.textContent=m;
+    chip.addEventListener('click',function(){
+      circMFilter=m;
+      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+      this.classList.add('on');
+      filterCircExos();
+    });
+    chips.appendChild(chip);
+  });
   filterCircExos();
   ge('m-circ-exo').style.display='flex';
 }
-function setCircMF(m,el){circMFilter=m;document.querySelectorAll('#circ-muscle-chips .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');filterCircExos();}
+function setCircMF(m,el){circMFilter=m;document.querySelectorAll('#circ-muscle-chips .chip').forEach(c=>c.classList.remove('on'));if(el)el.classList.add('on');filterCircExos();}
 function filterCircExos(){
   const q=(ge('circ-exo-search')?.value||'').toLowerCase();
-  // All exercises: cardio + regular + custom
   const allEx=[
-    ...CARDIO_EXERCISES.map(e=>({...e,cats:e.cats||[],isCardio:true})),
-    ...EX.map(e=>({...e,cats:[e.m],n:(S.customNames&&S.customNames[e.id])||e.n,m:(S.customMuscles&&S.customMuscles[e.id])||e.m})).map(e=>({...e,cats:[e.m]})),
-    ...(S.customExercises||[]).map(e=>({...e,cats:[e.m],n:(S.customNames&&S.customNames[e.id])||e.n}))
+    ...CARDIO_EXERCISES.map(e=>({id:e.id,n:e.n,cats:e.cats||[]})),
+    ...EX.map(e=>({id:e.id,n:(S.customNames&&S.customNames[e.id])||e.n,cats:[(S.customMuscles&&S.customMuscles[e.id])||e.m]})),
+    ...(S.customExercises||[]).map(e=>({id:e.id,n:(S.customNames&&S.customNames[e.id])||e.n,cats:[e.m]}))
   ];
   const list=allEx.filter(e=>{
-    const mOk=circMFilter==='Tous'||(e.cats||[]).includes(circMFilter);
+    const mOk=circMFilter==='Tous'||(e.cats||[]).some(c=>c===circMFilter);
     const sOk=!q||e.n.toLowerCase().includes(q)||(e.cats||[]).join(' ').toLowerCase().includes(q);
     return mOk&&sOk;
   });
-  const colors={'Cardio':'#FF6B6B','Pectoraux':'#0077B6','Dos':'#1B4332','Biceps':'#6A0572','Triceps':'#9B2335','Épaules':'#CC5500','Abdominaux':'#374151','Jambes':'#7B3F00','Fessiers':'#4A235A'};
-  ge('circ-exo-list').innerHTML=list.map(e=>`
-    <div class="ep-item" onclick="pickCircExo('${e.id}')">
-      <div style="flex:1;min-width:0">
-        <div class="ep-nm">${e.n}</div>
-        <div style="display:flex;gap:.2rem;flex-wrap:wrap;margin:.15rem 0">
-          ${(e.cats||[]).map(cat=>`<span class="tag" style="background:${colors[cat]||'#333'}22;color:${colors[cat]||'#aaa'};border:1px solid ${colors[cat]||'#555'}44">${cat}</span>`).join('')}
-        </div>
+  const colors={'Cardio':'#FF6B6B','Pectoraux':'#0096C7','Dos':'#40916C','Biceps':'#9B5DE5','Triceps':'#E63946','Épaules':'#FF8C00','Abdominaux':'#607D8B','Jambes':'#A0522D','Fessiers':'#7B1FA2'};
+  const listEl=ge('circ-exo-list');
+  if(!listEl)return;
+  listEl.innerHTML='';
+  list.forEach(e=>{
+    const div=document.createElement('div');
+    div.className='ep-item';
+    div.innerHTML=`<div style="flex:1;min-width:0">
+      <div class="ep-nm">${e.n}</div>
+      <div style="display:flex;gap:.2rem;flex-wrap:wrap;margin:.15rem 0">
+        ${(e.cats||[]).map(cat=>`<span class="tag" style="background:${colors[cat]||'#333'}22;color:${colors[cat]||'#90CAF9'};border:1px solid ${colors[cat]||'#555'}44">${cat}</span>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+    div.addEventListener('click',()=>pickCircExo(e.id));
+    listEl.appendChild(div);
+  });
 }
 function pickCircExo(id){
   const all=[...CARDIO_EXERCISES,...EX,...(S.customExercises||[])];
