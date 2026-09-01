@@ -250,6 +250,25 @@ select option{background:var(--card2)}
 hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 @keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .su{animation:slideUp .2s ease}
+
+/* CIRCUIT */
+.circ-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:.85rem 1rem;margin-bottom:.55rem;position:relative;overflow:hidden}
+.circ-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#FF6B6B,#FFB347)}
+.circ-name{font-weight:900;font-size:.97rem;margin-bottom:.2rem}
+.circ-meta{font-size:.72rem;color:var(--t3);font-weight:600}
+.circ-exo-block{background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:.6rem;overflow:hidden}
+.circ-exo-head{display:flex;align-items:center;padding:.65rem .85rem;gap:.55rem}
+.circ-exo-nm{font-weight:800;font-size:.9rem;line-height:1.25;word-break:break-word}
+.circ-exo-tags{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem}
+.circ-exo-body{padding:0 .75rem .75rem}
+.circ-timer-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.circ-timer-ring svg{transform:rotate(-90deg)}
+.circ-ring-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:900;color:#FF6B6B;font-variant-numeric:tabular-nums}
+.work-active .circ-timer-ring .circ-ring-n{color:#FFB347}
+.circ-phase-work{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.3)!important}
+.circ-phase-rest{background:rgba(72,202,228,.08);border-color:rgba(72,202,228,.2)!important}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.4)}50%{box-shadow:0 0 0 8px rgba(255,107,107,0)}}
+.circ-running{animation:pulseRed 1.5s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -259,6 +278,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
   <div class="nav-tabs">
     <button class="ntb act" data-tab="history"><div class="ico">📊</div>Stats</button>
     <button class="ntb" data-tab="routines"><div class="ico">📋</div>Routines</button>
+    <button class="ntb" data-tab="circuit"><div class="ico">⚡</div>Circuit</button>
     <button class="ntb" data-tab="workout"><div class="ico">🏋️</div>Séance</button>
   </div>
 </nav>
@@ -294,6 +314,31 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
         <button class="btn btn-ghost" style="width:100%;margin-top:.2rem" id="btn-add-exo">+ Exercice</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- CIRCUIT / CARDIO / HIIT -->
+<div id="tab-circuit" class="section">
+  <div class="inner">
+    <div class="sec-head">
+      <div class="sec-title">⚡ Circuits & Cardio</div>
+      <button class="btn btn-ice btn-sm" id="btn-new-circuit">+ Nouveau</button>
+    </div>
+    <!-- Active circuit workout -->
+    <div id="circuit-active-banner" style="display:none;background:linear-gradient(135deg,rgba(255,107,107,.15),rgba(255,179,71,.1));border:1px solid rgba(255,107,107,.3);border-radius:14px;padding:.85rem 1rem;margin-bottom:.8rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <div>
+          <div style="font-weight:900;font-size:1rem;color:#FF6B6B" id="cab-name"></div>
+          <div style="font-size:.72rem;color:var(--t3);font-weight:600">Circuit en cours</div>
+        </div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <div style="font-size:1.4rem;font-weight:900;font-variant-numeric:tabular-nums;color:#FFB347" id="cab-timer">00:00</div>
+          <button class="btn btn-danger btn-sm" id="btn-stop-circuit">Stop ✓</button>
+        </div>
+      </div>
+      <div id="cab-current-exo" style="font-size:.82rem;color:var(--t2);font-weight:600"></div>
+    </div>
+    <div id="circuits-list"></div>
   </div>
 </div>
 
@@ -1066,9 +1111,11 @@ function filterReplaceExos(){
     </div></div>`).join('');
 }
 function pickReplace(id){
-  const e=EX.find(x=>x.id===id);if(!e||!replaceCb)return;
+  const all=[...EX,...(S.customExercises||[])];
+  const e=all.find(x=>x.id===id);if(!e||!replaceCb)return;
+  const resolved={...e,m:(S.customMuscles&&S.customMuscles[id])||e.m,n:(S.customNames&&S.customNames[id])||e.n};
   ge('m-replace-exo').style.display='none';
-  replaceCb({...e});replaceCb=null;
+  replaceCb(resolved);replaceCb=null;
 }
 
 // ── PAUSE ──
@@ -1350,8 +1397,10 @@ function filterExos(){
   </div>`).join('');
 }
 function pickEx(id){
-  const e=EX.find(x=>x.id===id);if(!e||!exoCb)return;
-  closeExoModal();exoCb({...e});exoCb=null;
+  const all=[...EX,...(S.customExercises||[])];
+  const e=all.find(x=>x.id===id);if(!e||!exoCb)return;
+  const resolved={...e,m:(S.customMuscles&&S.customMuscles[id])||e.m,n:(S.customNames&&S.customNames[id])||e.n};
+  closeExoModal();exoCb(resolved);exoCb=null;
 }
 
 // ── HISTORY ──
