@@ -1953,8 +1953,8 @@ function renderCharts(){
   if(chartP==='month'){
     const targetDate=new Date(now.getFullYear(),now.getMonth()+chartMonthOffset,1);
     const ml=document.getElementById('month-label');
-    if(ml)ml.textContent=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
-    const mnxt=document.getElementById('btn-month-next');
+    if(ml){const s=targetDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});ml.textContent=s.charAt(0).toUpperCase()+s.slice(1);}
+        const mnxt=document.getElementById('btn-month-next');
     if(mnxt){mnxt.style.opacity=chartMonthOffset>=0?'.3':'1';mnxt.style.pointerEvents=chartMonthOffset>=0?'none':'auto';}
   }
   // Year nav
