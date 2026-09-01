@@ -38,9 +38,9 @@ nav{height:var(--nav);flex-shrink:0;position:relative;z-index:100;
 
 /* SCROLL */
 #app{flex:1;overflow:hidden;position:relative;z-index:1}
-.section{display:none;flex:1;overflow:hidden}
+.section{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .section::-webkit-scrollbar{display:none}
-.section.act{display:flex!important;flex-direction:column;overflow:hidden}
+.section.act{display:block!important}
 .inner{padding:.8rem .85rem 5rem}
 
 /* BUTTONS */
@@ -286,7 +286,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <div id="app">
 <!-- WORKOUT -->
 <div id="tab-workout" class="section act">
-  <div id="v-home" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+  <div id="v-home">
     <div class="inner">
       <div class="sec-head"><div class="sec-title">Bonne séance 💪</div></div>
       <div id="home-stats"></div>
@@ -308,7 +308,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
         <button class="btn btn-danger btn-sm" id="btn-end">Fin ✓</button>
       </div>
     </div>
-    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" id="active-scroll">
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" id="active-scroll" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
       <div class="inner" style="padding-top:.7rem">
         <div id="active-exos"></div>
         <button class="btn btn-ghost" style="width:100%;margin-top:.2rem" id="btn-add-exo">+ Exercice</button>
@@ -320,7 +320,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <!-- CIRCUIT / CARDIO / HIIT -->
 <div id="tab-circuit" class="section">
   <!-- HOME VIEW -->
-  <div id="circ-v-home" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+  <div id="circ-v-home">
     <div class="inner">
       <div class="sec-head">
         <div class="sec-title">⚡ Circuits & Cardio</div>
@@ -344,7 +344,7 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
       </div>
     </div>
     <!-- Rest bar for circuit (reuses same rest-bar) -->
-    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" id="circ-scroll">
+    <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain" id="circ-scroll" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
       <div class="inner" style="padding-top:.7rem">
         <div id="circ-active-exos"></div>
       </div>
