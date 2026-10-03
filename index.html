@@ -500,7 +500,10 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <!-- MODALS -->
 <div id="m-routine" class="modal-ov ctr" style="display:none">
   <div class="modal rd">
-    <div class="m-title" id="rm-title">Nouvelle routine</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+      <div class="m-title" style="margin:0" id="rm-title">Nouvelle routine</div>
+      <button class="btn-icon" style="font-size:1.3rem;color:var(--t3)" onclick="closeRModal()">✕</button>
+    </div>
     <div class="form-g">
       <label>Nom</label>
       <div style="display:flex;gap:.4rem">
@@ -554,7 +557,10 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
 <div id="m-detail" class="modal-ov" style="display:none">
   <div class="modal">
     <div class="m-handle"></div>
-    <div class="m-title" id="det-title"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+      <div class="m-title" style="margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:.5rem" id="det-title"></div>
+      <button class="btn-icon" style="font-size:1.3rem;color:var(--t3);flex-shrink:0" onclick="closeDet()">✕</button>
+    </div>
     <div id="det-body"></div>
     <button class="btn btn-ghost" style="width:100%;margin-top:.7rem" id="btn-close-det">Fermer</button>
   </div>
@@ -627,6 +633,19 @@ hr{border:none;border-top:1px solid var(--border);margin:.7rem 0}
     <div class="chip-scroll" id="circ-muscle-chips"></div>
     <div id="circ-exo-list" style="max-height:50vh;overflow-y:scroll"></div>
     <button class="btn btn-ghost" style="width:100%;margin-top:.65rem" onclick="ge('m-circ-exo').style.display='none'">Annuler</button>
+  </div>
+</div>
+
+<!-- EDIT REST TIME MODAL -->
+<div id="m-edit-rest" class="modal-ov ctr" style="display:none;z-index:220">
+  <div class="modal rd" style="padding:1.1rem .9rem">
+    <div class="m-title">⏱ Temps de récupération</div>
+    <input type="hidden" id="edit-rest-ei">
+    <select id="edit-rest-select" style="width:100%;font-size:1rem;padding:.5rem;border-radius:10px;text-align:center;margin:.5rem 0 .9rem"></select>
+    <div style="display:flex;gap:.45rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="ge('m-edit-rest').style.display='none'">Annuler</button>
+      <button class="btn btn-ice" style="flex:2" id="btn-confirm-rest">✅ Valider</button>
+    </div>
   </div>
 </div>
 
@@ -1015,7 +1034,7 @@ function buildExoBlock(ex,ei){
       <div class="exo-sub">
         <span class="tag t-blue">${def.m}</span>
         <span class="tag ${ex.bw?'t-ice':'t-orange'}" style="margin-left:.2rem">${ex.bw?'Poids corps':def.e}</span>
-        <span style="margin-left:.3rem;font-size:.65rem;color:var(--t3)">⏱ ${fRest(ex.restTime||60)}</span>
+        <span style="margin-left:.3rem;font-size:.65rem;color:var(--ice2);font-weight:700;cursor:pointer;padding:.1rem .25rem;background:rgba(72,202,228,.08);border-radius:5px;border:1px solid rgba(72,202,228,.15)" data-edit-rest-ei="${ei}" title="Modifier récup">⏱ ${fRest(ex.restTime||60)} ✎</span>
       </div>
     </div>
     <div style="display:flex;gap:.25rem;align-items:center">
@@ -1065,18 +1084,59 @@ function buildExoBlock(ex,ei){
   body.appendChild(addBtn);
   div.appendChild(body);
 
-  // Drag events
-  div.addEventListener('dragstart',e=>{dragSrc=ei;e.dataTransfer.effectAllowed='move';div.style.opacity='.5';});
-  div.addEventListener('dragend',()=>{div.style.opacity='1';dragSrc=null;});
-  div.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});
-  div.addEventListener('drop',e=>{
-    e.preventDefault();
-    if(dragSrc===null||dragSrc===ei)return;
-    const arr=S.cw.exercises;
-    const tmp=arr.splice(dragSrc,1)[0];
-    arr.splice(ei,0,tmp);
-    save();renderActive();
-  });
+  // Touch + mouse drag for reordering
+  const handle=div.querySelector('.drag-handle');
+  if(handle){
+    let touchDrag=false,touchStartY=0,touchSrcEi=ei;
+    handle.addEventListener('touchstart',e=>{
+      touchDrag=true;touchStartY=e.touches[0].clientY;
+      div.style.opacity='.6';div.style.transform='scale(1.02)';
+      e.preventDefault();
+    },{passive:false});
+    handle.addEventListener('touchmove',e=>{
+      if(!touchDrag)return;
+      e.preventDefault();
+      const y=e.touches[0].clientY;
+      const allBlocks=Array.from(ge('active-exos').querySelectorAll('.exo-block'));
+      allBlocks.forEach(b=>b.style.outline='none');
+      const target=allBlocks.find(b=>{
+        const r=b.getBoundingClientRect();
+        return y>=r.top&&y<=r.bottom&&b!==div;
+      });
+      if(target)target.style.outline='2px solid var(--ice)';
+    },{passive:false});
+    handle.addEventListener('touchend',e=>{
+      if(!touchDrag)return;
+      touchDrag=false;
+      div.style.opacity='1';div.style.transform='';
+      const y=e.changedTouches[0].clientY;
+      const allBlocks=Array.from(ge('active-exos').querySelectorAll('.exo-block'));
+      allBlocks.forEach(b=>b.style.outline='none');
+      const targetIdx=allBlocks.findIndex(b=>{
+        const r=b.getBoundingClientRect();
+        return y>=r.top&&y<=r.bottom&&b!==div;
+      });
+      if(targetIdx>-1){
+        const srcIdx=+div.dataset.ei;
+        const arr=S.cw.exercises;
+        const tmp=arr.splice(srcIdx,1)[0];
+        arr.splice(targetIdx,0,tmp);
+        save();renderActive();
+      }
+    });
+    // Mouse drag fallback
+    div.addEventListener('dragstart',e=>{dragSrc=ei;e.dataTransfer.effectAllowed='move';div.style.opacity='.5';});
+    div.addEventListener('dragend',()=>{div.style.opacity='1';dragSrc=null;});
+    div.addEventListener('dragover',e=>{e.preventDefault();});
+    div.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragSrc===null||dragSrc===ei)return;
+      const arr=S.cw.exercises;
+      const tmp=arr.splice(dragSrc,1)[0];
+      arr.splice(ei,0,tmp);
+      save();renderActive();
+    });
+  }
 
   return div;
 }
@@ -2091,6 +2151,13 @@ document.addEventListener('visibilitychange',()=>{
     if(rLeft<=0){clearInterval(rInt);S._restStart=null;S._restTotal=0;save();beepAndVibrate();skipRest();}
   }
 });
+ge('btn-confirm-rest').addEventListener('click',()=>{
+  const ei=+ge('edit-rest-ei').value;
+  const val=+ge('edit-rest-select').value;
+  if(S.cw&&S.cw.exercises[ei])S.cw.exercises[ei].restTime=val;
+  save();renderActive();
+  ge('m-edit-rest').style.display='none';
+});
 ge('btn-cancel-rename').addEventListener('click',()=>{ge('m-rename').style.display='none';_renameCb=null;});
 ge('btn-confirm-create-exo').addEventListener('click',confirmCreateExo);
 ge('btn-confirm-rename').addEventListener('click',confirmRename);
@@ -2099,6 +2166,22 @@ document.querySelectorAll('.ct[data-p]').forEach(b=>b.addEventListener('click',f
   document.querySelectorAll('.ct[data-p]').forEach(x=>x.classList.remove('act'));
   this.classList.add('act');chartP=this.dataset.p;renderCharts();
 }));
+
+// Event delegation for rest time editing in active workout
+document.addEventListener('click',function(ev){
+  const el=ev.target.closest('[data-edit-rest-ei]');
+  if(!el||!S.cw)return;
+  const ei=+el.dataset.editRestEi;
+  const ex=S.cw.exercises[ei];
+  if(!ex)return;
+  // Show rest time picker inline
+  const opts=[15,30,45,60,75,90,105,120,150,180,210,240,300];
+  const cur=ex.restTime||60;
+  ge('edit-rest-ei').value=ei;
+  const sel=ge('edit-rest-select');
+  sel.innerHTML=opts.map(v=>`<option value="${v}"${v===cur?' selected':''}>${fRest(v)}</option>`).join('');
+  ge('m-edit-rest').style.display='flex';
+});
 
 // Event delegation for exercise name editing
 document.addEventListener('click',function(ev){
